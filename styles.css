@@ -760,65 +760,99 @@ fieldset {
   gap: 1rem;
 }
 
-.playlist-grid {
+.playlist-panel {
   display: grid;
-  max-width: 48rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  margin: 0 auto;
 }
 
-.music-card {
+.playlist-search {
   display: grid;
-  min-height: 9rem;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: 1rem;
-  padding: 1.2rem;
-  border: 1px solid rgba(241, 183, 87, 0.34);
-  border-radius: var(--radius);
-  background:
-    linear-gradient(135deg, rgba(16, 45, 37, 0.72), rgba(91, 32, 43, 0.68)),
-    rgba(255, 248, 231, 0.08);
-  box-shadow: var(--shadow);
-  text-decoration: none;
 }
 
-.music-card strong,
-.music-card small {
-  display: block;
+.playlist-form {
+  display: grid;
+  gap: 1rem;
 }
 
-.music-card strong {
-  color: var(--ink);
-  font-family: "Cormorant Garamond", serif;
-  font-size: 2rem;
-  line-height: 1;
+.playlist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
-.music-card small {
-  margin-top: 0.35rem;
+.shared-playlist {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.empty-playlist {
+  margin: 0;
   color: rgba(255, 248, 231, 0.72);
   font-weight: 800;
 }
 
-.music-icon {
-  display: inline-grid;
-  width: 3.4rem;
-  height: 3.4rem;
+.playlist-song {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid rgba(241, 183, 87, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 248, 231, 0.08);
+}
+
+.playlist-art {
+  display: grid;
+  width: 4.25rem;
+  height: 4.25rem;
   place-items: center;
-  border-radius: 50%;
-  color: #101b17;
-  font-size: 1.8rem;
+  border: 1px solid rgba(241, 183, 87, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 248, 231, 0.1);
+  color: var(--gold);
+  font-size: 1.7rem;
+  overflow: hidden;
+}
+
+.playlist-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-song-details {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.playlist-song-details strong {
+  color: var(--ink);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.playlist-song-details span,
+.playlist-song-details small {
+  color: rgba(255, 248, 231, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.playlist-song-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.playlist-song-links a {
+  color: var(--gold);
+  font-size: 0.82rem;
   font-weight: 900;
-}
-
-.apple-icon {
-  background: linear-gradient(135deg, #f7d0df, #fff8e7);
-}
-
-.spotify-icon {
-  background: linear-gradient(135deg, #9fe8a6, #f1b757);
 }
 
 .drop-zone {
@@ -1029,7 +1063,7 @@ footer {
   .field-row,
   .segmented,
   .countdown,
-  .playlist-grid {
+  .playlist-search {
     grid-template-columns: 1fr;
   }
 }

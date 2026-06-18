@@ -48,5 +48,17 @@ service cloud.firestore {
         && request.resource.data.size > 0;
       allow get, list, update, delete: if isAdmin();
     }
+
+    match /playlistSongs/{songId} {
+      allow get, list: if true;
+      allow create: if signedIn()
+        && request.resource.data.addedByUid == request.auth.uid
+        && request.resource.data.spotifyUrl is string
+        && request.resource.data.spotifyUrl.matches("https://open\\.spotify\\.com/track/.*")
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200;
+      allow update, delete: if isAdmin();
+    }
   }
 }

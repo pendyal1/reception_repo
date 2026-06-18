@@ -220,33 +220,49 @@
           <div class="section-heading">
             <p class="eyebrow">Playlist</p>
             <h2 id="playlistTitle">Add a song for the evening</h2>
-            <p>Help shape the reception soundtrack on Apple Music or Spotify.</p>
+            <p>Search Spotify, add a track link, and see the latest shared playlist.</p>
           </div>
-          <div class="playlist-grid">
-            <a
-              class="music-card"
-              href="https://music.apple.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span class="music-icon apple-icon" aria-hidden="true">♪</span>
-              <span>
-                <strong>Apple Music</strong>
-                <small>Add your song</small>
-              </span>
-            </a>
-            <a
-              class="music-card"
-              href="https://open.spotify.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span class="music-icon spotify-icon" aria-hidden="true">♪</span>
-              <span>
-                <strong>Spotify</strong>
-                <small>Add your song</small>
-              </span>
-            </a>
+          <div class="playlist-panel panel">
+            <div class="auth-required" data-auth-required>
+              Sign in with Google to add songs.
+            </div>
+            <div class="playlist-search">
+              <label>
+                Search Spotify
+                <input id="spotifySearch" placeholder="Song or artist" />
+              </label>
+              <button class="button secondary" id="spotifySearchButton" type="button">
+                Search Spotify
+              </button>
+            </div>
+            <form class="playlist-form" id="playlistForm">
+              <label>
+                Spotify track link
+                <input
+                  id="spotifyTrackUrl"
+                  type="url"
+                  placeholder="https://open.spotify.com/track/..."
+                  required
+                />
+              </label>
+              <label>
+                Notes
+                <input id="songNote" placeholder="Optional dedication or vibe" />
+              </label>
+              <button class="button primary wide" type="submit">Add song</button>
+              <p class="status" id="playlistStatus" role="status"></p>
+            </form>
+            <div class="playlist-actions">
+              <button class="button secondary" id="downloadSpotifyPlaylist" type="button" disabled>
+                Download Spotify playlist
+              </button>
+              <button class="button secondary" id="downloadApplePlaylist" type="button" disabled>
+                Download Apple playlist
+              </button>
+            </div>
+            <div class="shared-playlist" id="sharedPlaylist" aria-live="polite">
+              <p class="empty-playlist">Loading latest playlist...</p>
+            </div>
           </div>
         </section>
 
