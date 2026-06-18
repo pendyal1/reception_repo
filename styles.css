@@ -123,8 +123,17 @@ textarea {
   backdrop-filter: blur(16px);
 }
 
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
 .brand {
   display: inline-grid;
+  flex: 0 0 auto;
   width: 3.2rem;
   height: 3.2rem;
   place-items: center;
@@ -141,6 +150,26 @@ textarea {
 .brand span:nth-child(2) {
   color: var(--gold);
   font-size: 0.8rem;
+}
+
+.nav-couple-name {
+  max-width: 0;
+  color: var(--ink);
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(-0.4rem);
+  transition: opacity 260ms ease, transform 260ms ease, max-width 260ms ease;
+}
+
+.show-nav-title .nav-couple-name {
+  max-width: 14rem;
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .nav-links {
@@ -222,6 +251,18 @@ textarea {
   background: var(--paper);
   color: #4285f4;
   font-weight: 900;
+}
+
+.auth-avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid rgba(241, 183, 87, 0.66);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.is-signed-in .google-mark {
+  display: none;
 }
 
 .hero {
@@ -963,6 +1004,10 @@ footer {
 
   .icon-button {
     padding: 0 0.72rem;
+  }
+
+  .show-nav-title .nav-couple-name {
+    max-width: 9rem;
   }
 
   .hero {

@@ -35,6 +35,7 @@ const elements = {
   adminLinks: document.querySelectorAll(".admin-link"),
   adminSection: document.querySelector("#admin"),
   authButton: document.querySelector("#authButton"),
+  authAvatar: document.querySelector("#authAvatar"),
   authButtonText: document.querySelector("#authButtonText"),
   daysLeft: document.querySelector("#daysLeft"),
   hoursLeft: document.querySelector("#hoursLeft"),
@@ -93,6 +94,8 @@ function setStatus(element, message, isError = false) {
 function setSignedInUi(user) {
   document.body.classList.toggle("is-signed-in", Boolean(user));
   elements.authButtonText.textContent = user ? "Sign out" : "Sign in";
+  elements.authAvatar.hidden = !user?.photoURL;
+  elements.authAvatar.src = user?.photoURL || "";
   elements.guestName.value = user?.displayName || elements.guestName.value || "";
   elements.guestEmail.value = user?.email || elements.guestEmail.value || "";
 }
@@ -147,8 +150,10 @@ function updateFlowerVisibility() {
   const onHero = heroBox.top <= viewportCenter && heroBox.bottom >= viewportCenter;
   const onDetails = detailsBox.top <= viewportCenter && detailsBox.bottom >= viewportCenter;
   const onRsvp = rsvpBox.top <= viewportCenter && rsvpBox.bottom >= viewportCenter;
+  const pastHero = heroBox.bottom <= viewportCenter;
 
   document.body.classList.toggle("show-flowers", (onHero || onRsvp) && !onDetails);
+  document.body.classList.toggle("show-nav-title", pastHero);
 }
 
 function getWeatherPresentation(code, isDay) {
