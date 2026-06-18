@@ -18,8 +18,8 @@
     <script type="module" src="src/main.js"></script>
   </head>
   <body>
-    <div class="floral-rail floral-rail-left" aria-hidden="true"></div>
-    <div class="floral-rail floral-rail-right" aria-hidden="true"></div>
+    <img class="flower-frame flower-frame-left" src="assets/floral-side.png" alt="" aria-hidden="true" />
+    <img class="flower-frame flower-frame-right" src="assets/floral-side.png" alt="" aria-hidden="true" />
     <div class="site-shell">
       <header class="topbar" aria-label="Reception navigation">
         <a class="brand" href="#invite" aria-label="Pallavi and Aditya home">
@@ -88,11 +88,41 @@
               <p>Sign in with Google so your RSVP and uploads stay attached to you.</p>
             </article>
             <article class="detail-card weather-card">
-              <span class="detail-label">Expected Weather</span>
-              <strong>Warm evening, likely mid 70s</strong>
+              <div class="weather-card-head">
+                <div>
+                  <span class="detail-label">Live Weather</span>
+                  <strong id="weatherTemp">Checking Durham...</strong>
+                </div>
+                <div class="weather-art is-loading" id="weatherArt" aria-hidden="true">
+                  <span class="sun"></span>
+                  <span class="cloud cloud-one"></span>
+                  <span class="cloud cloud-two"></span>
+                  <span class="rain"></span>
+                  <span class="bolt"></span>
+                </div>
+              </div>
+              <p id="weatherCondition">
+                Pulling the latest weather near The Glasshouse Kitchen.
+              </p>
+              <p class="weather-meta" id="weatherUpdated">
+                Forecast data by
+                <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>.
+              </p>
+            </article>
+            <article class="detail-card dress-card">
+              <div>
+                <span class="detail-label">Dress Code</span>
+                <strong>Cocktail dresses</strong>
+                <p>Dress for an elegant garden reception.</p>
+              </div>
+              <img src="assets/dress-code.png" alt="Cocktail dress and evening outfit illustration" />
+            </article>
+            <article class="detail-card climate-card">
+              <span class="detail-label">Seasonal Note</span>
+              <strong>Warm September evening</strong>
               <p>
                 RDU climate normal for September 6 is 85°F / 65°F with 0.16"
-                average precipitation. Exact forecast appears closer to the event.
+                average precipitation. The live card updates when the site opens.
               </p>
             </article>
           </div>

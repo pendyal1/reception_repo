@@ -28,6 +28,8 @@ import { firebaseConfig } from "./firebase-config.js";
 const eventStart = new Date("2026-09-06T18:30:00-04:00");
 const placeholderProjectId = "YOUR_PROJECT_ID";
 const coupleAdminEmails = new Set(["ap4839@columbia.edu", "pallaviputcha@gmail.com"]);
+const weatherEndpoint =
+  "https://api.open-meteo.com/v1/forecast?latitude=35.994&longitude=-78.899&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&timezone=America%2FNew_York";
 
 const elements = {
   adminLinks: document.querySelectorAll(".admin-link"),
@@ -44,6 +46,10 @@ const elements = {
   rsvpStatus: document.querySelector("#rsvpStatus"),
   photoInput: document.querySelector("#photoInput"),
   fileSummary: document.querySelector("#fileSummary"),
+  weatherArt: document.querySelector("#weatherArt"),
+  weatherCondition: document.querySelector("#weatherCondition"),
+  weatherTemp: document.querySelector("#weatherTemp"),
+  weatherUpdated: document.querySelector("#weatherUpdated"),
   uploadButton: document.querySelector("#uploadButton"),
   uploadProgress: document.querySelector("#uploadProgress"),
   uploadStatus: document.querySelector("#uploadStatus"),
@@ -128,6 +134,51 @@ function appendCell(row, ...values) {
 
 function getSelectedAttendance(form) {
   return new FormData(form).get("attendance");
+}
+
+function getWeatherPresentation(code, isDay) {
+  if (code === 0) return { label: "Clear sky", art: isDay ? "is-sunny" : "is-night" };
+  if ([1, 2].includes(code)) return { label: "Mostly clear", art: "is-partly-cloudy" };
+  if (code === 3) return { label: "Cloudy", art: "is-cloudy" };
+  if ([45, 48].includes(code)) return { label: "Foggy", art: "is-cloudy" };
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+    return { label: "Rain nearby", art: "is-rainy" };
+  }
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return { label: "Snow nearby", art: "is-cloudy" };
+  if ([95, 96, 99].includes(code)) return { label: "Thunderstorms nearby", art: "is-stormy" };
+  return { label: "Weather updating", art: "is-partly-cloudy" };
+}
+
+async function loadWeather() {
+  try {
+    const response = await fetch(weatherEndpoint);
+    if (!response.ok) throw new Error("Weather request failed");
+
+    const data = await response.json();
+    const current = data.current;
+    const unit = data.current_units?.temperature_2m || "°F";
+    const temperature = Math.round(current.temperature_2m);
+    const weather = getWeatherPresentation(current.weather_code, current.is_day === 1);
+    const updated = new Date(current.time).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    elements.weatherTemp.textContent = `${temperature}${unit}`;
+    elements.weatherCondition.textContent = `${weather.label} near The Glasshouse Kitchen in Durham.`;
+    elements.weatherUpdated.innerHTML =
+      `Updated ${updated}. Data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>.`;
+    elements.weatherArt.className = `weather-art ${weather.art}`;
+  } catch (error) {
+    elements.weatherTemp.textContent = "Weather unavailable";
+    elements.weatherCondition.textContent =
+      "Live weather could not load. Expect a warm September evening in Durham.";
+    elements.weatherUpdated.innerHTML =
+      `Seasonal estimate from RDU climate normals. Live data by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>.`;
+    elements.weatherArt.className = "weather-art is-partly-cloudy";
+  }
 }
 
 async function loadMyRsvp(user) {
@@ -383,4 +434,5 @@ elements.refreshUploads.addEventListener("click", () => loadUploads().catch(cons
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
+loadWeather();
 initializeFirebase();
