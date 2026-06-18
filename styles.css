@@ -61,20 +61,33 @@ body::after {
   width: clamp(7.5rem, 15vw, 16rem);
   height: auto;
   pointer-events: none;
-  opacity: 0.78;
+  opacity: 0;
   filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.28));
+  transition: opacity 520ms ease, transform 520ms ease;
+}
+
+.show-flowers .flower-frame {
+  opacity: 0.78;
 }
 
 .flower-frame-left {
   left: -3.5rem;
   bottom: 1.2rem;
-  transform: rotate(-8deg);
+  transform: scaleX(-1) rotate(-8deg);
+}
+
+.show-flowers .flower-frame-left {
+  transform: scaleX(-1) rotate(-4deg);
 }
 
 .flower-frame-right {
   right: -3.5rem;
   top: 5.5rem;
-  transform: scaleX(-1) rotate(-8deg);
+  transform: scaleX(-1) rotate(8deg);
+}
+
+.show-flowers .flower-frame-right {
+  transform: scaleX(-1) rotate(4deg);
 }
 
 .flower-frame::selection {
@@ -397,6 +410,35 @@ h1 {
   font-weight: 800;
 }
 
+.calendar-button {
+  margin-top: 0.55rem;
+}
+
+.map-preview {
+  position: relative;
+  min-height: 7rem;
+  margin-top: 0.9rem;
+  border: 1px solid rgba(241, 183, 87, 0.32);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: rgba(16, 45, 37, 0.45);
+}
+
+.map-preview iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  filter: saturate(0.8) contrast(0.95);
+}
+
+.map-preview a {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .weather-card-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 5.25rem;
@@ -407,6 +449,13 @@ h1 {
 .weather-meta {
   margin-bottom: 0;
   font-size: 0.78rem;
+}
+
+.weather-seasonal {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(241, 183, 87, 0.2);
+  font-size: 0.82rem;
 }
 
 .weather-art {
@@ -835,6 +884,9 @@ footer {
 
   .flower-frame {
     width: 7rem;
+  }
+
+  .show-flowers .flower-frame {
     opacity: 0.38;
   }
 }

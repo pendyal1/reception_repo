@@ -50,6 +50,9 @@ const elements = {
   weatherCondition: document.querySelector("#weatherCondition"),
   weatherTemp: document.querySelector("#weatherTemp"),
   weatherUpdated: document.querySelector("#weatherUpdated"),
+  heroSection: document.querySelector("#invite"),
+  detailsSection: document.querySelector("#details"),
+  rsvpSection: document.querySelector("#rsvp"),
   uploadButton: document.querySelector("#uploadButton"),
   uploadProgress: document.querySelector("#uploadProgress"),
   uploadStatus: document.querySelector("#uploadStatus"),
@@ -134,6 +137,18 @@ function appendCell(row, ...values) {
 
 function getSelectedAttendance(form) {
   return new FormData(form).get("attendance");
+}
+
+function updateFlowerVisibility() {
+  const viewportCenter = window.innerHeight / 2;
+  const heroBox = elements.heroSection.getBoundingClientRect();
+  const detailsBox = elements.detailsSection.getBoundingClientRect();
+  const rsvpBox = elements.rsvpSection.getBoundingClientRect();
+  const onHero = heroBox.top <= viewportCenter && heroBox.bottom >= viewportCenter;
+  const onDetails = detailsBox.top <= viewportCenter && detailsBox.bottom >= viewportCenter;
+  const onRsvp = rsvpBox.top <= viewportCenter && rsvpBox.bottom >= viewportCenter;
+
+  document.body.classList.toggle("show-flowers", (onHero || onRsvp) && !onDetails);
 }
 
 function getWeatherPresentation(code, isDay) {
@@ -315,7 +330,7 @@ async function handleUpload() {
     elements.uploadProgress.value = 100;
     setStatus(
       elements.uploadStatus,
-      `${files.length} private upload${files.length === 1 ? "" : "s"} received. Only Pallavi and Aditya can view them.`
+      `${files.length} private upload${files.length === 1 ? "" : "s"} received. Photos will be shared after the event!`
     );
     if (appState.isAdmin) await loadUploads();
   } catch (error) {
@@ -431,8 +446,11 @@ elements.photoInput.addEventListener("change", () => {
 });
 elements.refreshRsvps.addEventListener("click", () => loadRsvps().catch(console.error));
 elements.refreshUploads.addEventListener("click", () => loadUploads().catch(console.error));
+window.addEventListener("scroll", updateFlowerVisibility, { passive: true });
+window.addEventListener("resize", updateFlowerVisibility);
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
+updateFlowerVisibility();
 loadWeather();
 initializeFirebase();

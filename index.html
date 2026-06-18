@@ -69,18 +69,33 @@
               <span class="detail-label">When</span>
               <strong>Sunday, September 6, 2026</strong>
               <p>6:30 PM - 9:30 PM</p>
+              <a
+                class="button secondary small calendar-button"
+                href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Pallavi%20%26%20Aditya%20Reception&dates=20260906T223000Z/20260907T013000Z&details=Reception%20for%20Pallavi%20and%20Aditya&location=The%20Glasshouse%20Kitchen%2C%20Durham%2C%20NC"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Add to calendar
+              </a>
             </article>
             <article class="detail-card">
               <span class="detail-label">Where</span>
               <strong>The Glasshouse Kitchen</strong>
               <p>Durham, North Carolina</p>
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=The%20Glasshouse%20Kitchen%20Durham"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open map
-              </a>
+              <div class="map-preview">
+                <iframe
+                  title="Map to The Glasshouse Kitchen"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="https://www.google.com/maps?q=The%20Glasshouse%20Kitchen%20Durham&output=embed"
+                ></iframe>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=The%20Glasshouse%20Kitchen%20Durham"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Open The Glasshouse Kitchen in Google Maps"
+                ></a>
+              </div>
             </article>
             <article class="detail-card">
               <span class="detail-label">Reply By</span>
@@ -108,6 +123,10 @@
                 Forecast data by
                 <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>.
               </p>
+              <p class="weather-seasonal">
+                Seasonal note: RDU climate normal for September 6 is 85°F / 65°F
+                with 0.16" average precipitation.
+              </p>
             </article>
             <article class="detail-card dress-card">
               <div>
@@ -116,14 +135,6 @@
                 <p>Dress for an elegant garden reception.</p>
               </div>
               <img src="assets/dress-code.png" alt="Cocktail dress and evening outfit illustration" />
-            </article>
-            <article class="detail-card climate-card">
-              <span class="detail-label">Seasonal Note</span>
-              <strong>Warm September evening</strong>
-              <p>
-                RDU climate normal for September 6 is 85°F / 65°F with 0.16"
-                average precipitation. The live card updates when the site opens.
-              </p>
             </article>
           </div>
           <div class="countdown" aria-label="Countdown to the reception">
@@ -139,7 +150,7 @@
             <p class="eyebrow">Kindly Respond</p>
             <h2 id="rsvpTitle">RSVP</h2>
             <p>
-              Use Google sign-in to keep responses tidy. Guests can update their own RSVP later.
+              Use Google sign-in to keep responses tidy.
             </p>
           </div>
           <form class="panel form-panel" id="rsvpForm">
@@ -179,11 +190,10 @@
 
         <section class="photo-band" id="photos" aria-labelledby="photosTitle">
           <div class="section-heading">
-            <p class="eyebrow">Private Memories</p>
+            <p class="eyebrow">Memories</p>
             <h2 id="photosTitle">Upload photos for us</h2>
             <p>
-              Uploads go privately to Pallavi and Aditya. Guests will not see thumbnails,
-              filenames, or a gallery after uploading.
+              Uploads go privately to Pallavi and Aditya. Photos will be shared after the event!
             </p>
           </div>
           <div class="panel upload-panel">
@@ -205,7 +215,6 @@
           <div class="section-heading">
             <p class="eyebrow">Couple Dashboard</p>
             <h2 id="adminTitle">RSVPs and private uploads</h2>
-            <p>Only Pallavi and Aditya can see this section.</p>
           </div>
           <div class="admin-tabs" aria-label="Couple dashboard tabs">
             <a class="button secondary" href="#admin-rsvps">RSVP List</a>
