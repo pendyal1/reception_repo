@@ -484,123 +484,6 @@ h1 {
   z-index: 1;
 }
 
-.weather-card-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 5.25rem;
-  align-items: start;
-  gap: 0.9rem;
-}
-
-.weather-meta {
-  margin-bottom: 0;
-  font-size: 0.78rem;
-}
-
-.weather-seasonal {
-  margin-top: 0.7rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(241, 183, 87, 0.2);
-  font-size: 0.82rem;
-}
-
-.weather-art {
-  position: relative;
-  width: 5rem;
-  height: 5rem;
-}
-
-.weather-art span {
-  position: absolute;
-  display: block;
-}
-
-.sun {
-  top: 0.4rem;
-  left: 0.35rem;
-  width: 3.2rem;
-  height: 3.2rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fff7b7, #f1b757 62%, #c78332);
-  box-shadow: 0 0 1.8rem rgba(241, 183, 87, 0.38);
-}
-
-.cloud {
-  right: 0.15rem;
-  bottom: 1rem;
-  width: 3.15rem;
-  height: 1.35rem;
-  border-radius: 999px;
-  background: #fff8e7;
-  box-shadow: -1.05rem 0.1rem 0 -0.1rem #efe3cc, -0.45rem -0.65rem 0 0.05rem #fff8e7;
-}
-
-.cloud-two {
-  right: 1rem;
-  bottom: 0.25rem;
-  transform: scale(0.72);
-  opacity: 0.7;
-}
-
-.rain {
-  right: 0.95rem;
-  bottom: 0.15rem;
-  width: 2.3rem;
-  height: 1.15rem;
-  background:
-    linear-gradient(115deg, transparent 0 38%, #9fc8d2 39% 55%, transparent 56%) 0 0 / 0.6rem 0.9rem repeat-x;
-}
-
-.bolt {
-  right: 1.3rem;
-  bottom: 0.1rem;
-  width: 1rem;
-  height: 1.8rem;
-  background: #f1b757;
-  clip-path: polygon(45% 0, 100% 0, 68% 42%, 100% 42%, 28% 100%, 48% 52%, 12% 52%);
-}
-
-.weather-art .cloud,
-.weather-art .cloud-two,
-.weather-art .rain,
-.weather-art .bolt {
-  display: none;
-}
-
-.weather-art.is-partly-cloudy .cloud,
-.weather-art.is-cloudy .cloud,
-.weather-art.is-cloudy .cloud-two,
-.weather-art.is-rainy .cloud,
-.weather-art.is-rainy .rain,
-.weather-art.is-stormy .cloud,
-.weather-art.is-stormy .rain,
-.weather-art.is-stormy .bolt,
-.weather-art.is-loading .cloud {
-  display: block;
-}
-
-.weather-art.is-cloudy .sun,
-.weather-art.is-rainy .sun,
-.weather-art.is-stormy .sun,
-.weather-art.is-night .sun {
-  display: none;
-}
-
-.weather-art.is-night::before {
-  position: absolute;
-  top: 0.35rem;
-  left: 0.7rem;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background: #fff8e7;
-  box-shadow: inset -0.8rem 0 0 #b9a3d2, 0 0 1.4rem rgba(255, 248, 231, 0.3);
-  content: "";
-}
-
-.weather-art.is-loading {
-  opacity: 0.72;
-}
-
 .dress-card {
   position: relative;
   display: grid;
@@ -617,62 +500,46 @@ h1 {
   filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.25));
 }
 
-.countdown {
-  max-width: 56rem;
-  margin: 1.2rem auto;
+.tile-countdown,
+.compact-countdown {
+  display: grid;
+  gap: 0.45rem;
 }
 
-.countdown p {
-  margin: 0 0 0.65rem;
+.tile-countdown p,
+.compact-countdown p {
+  margin: 0;
   color: var(--ink);
   font-family: "Cormorant Garamond", serif;
-  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  font-size: clamp(1.2rem, 2.4vw, 1.65rem);
   font-weight: 700;
-  text-align: center;
+  line-height: 1;
 }
 
-.countdown-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.8rem;
-}
-
-.countdown-grid div {
-  padding: 1.1rem;
-  border: 1px solid rgba(241, 183, 87, 0.32);
-  background: rgba(91, 32, 43, 0.58);
-  text-align: center;
-}
-
-.countdown-grid strong {
-  display: block;
+.tile-countdown strong,
+.compact-countdown strong {
   color: var(--gold);
   font-family: "Cormorant Garamond", serif;
-  font-size: 2.6rem;
-  line-height: 0.9;
+  font-size: clamp(1.8rem, 4vw, 2.65rem);
+  line-height: 1;
 }
 
-.countdown-grid span {
-  color: rgba(255, 248, 231, 0.72);
-  font-size: 0.78rem;
-  font-weight: 900;
-  text-transform: uppercase;
+.tile-countdown strong span,
+.compact-countdown strong span {
+  font-variant-numeric: tabular-nums;
 }
 
-.rsvp-countdown {
-  max-width: 48rem;
-}
-
-.rsvp-countdown p {
-  color: #f3c7bb;
-}
-
-.rsvp-countdown .countdown-grid div {
-  border-color: rgba(243, 199, 187, 0.42);
+.compact-countdown {
+  max-width: 34rem;
+  margin: 1rem auto;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(243, 199, 187, 0.42);
   background: rgba(18, 56, 45, 0.72);
+  text-align: center;
 }
 
-.rsvp-countdown .countdown-grid strong {
+.compact-countdown p,
+.compact-countdown strong {
   color: #f3c7bb;
 }
 
@@ -1150,7 +1017,6 @@ footer {
 
   .field-row,
   .segmented,
-  .countdown-grid,
   .playlist-search,
   .apple-result {
     grid-template-columns: 1fr;

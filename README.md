@@ -9,7 +9,6 @@ Fancy floral Evite-style reception site with Google sign-in, RSVP collection, pr
 - RSVP storage in Cloud Firestore.
 - Private image uploads in Cloud Storage for Firebase.
 - Admin-only RSVP List and Photos pages for `ap4839@columbia.edu` and `pallaviputcha@gmail.com`.
-- Live Durham weather pull through Open-Meteo, with matching sun/cloud/rain artwork.
 - Shared Apple Music playlist requests backed by Firestore, with Apple/iTunes search and a text export for Apple Music import tools.
 - Firestore and Storage security rules that prevent guests from viewing uploaded photos.
 - GitHub Actions workflow for GitHub Pages hosting.
@@ -107,5 +106,3 @@ In GitHub:
 The page uses the uploaded poster as the primary art direction: dark garden greens, maroon paneling, gold borders, pale script, floral density, and South Asian reception details. The guest workflow stays intentionally simple: details, RSVP, private upload.
 
 Every RSVP is treated as one guest. The site stores `partySize: 1` for compatibility with the existing Firestore schema, but guests cannot choose a party size.
-
-The weather card calls Open-Meteo on page load for current Durham weather near the venue. The seasonal note remains as a planning baseline because a reliable hourly forecast is not available this far before September 6, 2026.

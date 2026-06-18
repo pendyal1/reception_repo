@@ -73,15 +73,6 @@
             <p class="eyebrow">Evening</p>
             <h2 id="detailsTitle">The Celebration</h2>
           </div>
-          <div class="countdown event-countdown" aria-label="Countdown to the reception">
-            <p>Event starts in</p>
-            <div class="countdown-grid">
-              <div><strong id="eventDaysLeft">--</strong><span>days</span></div>
-              <div><strong id="eventHoursLeft">--</strong><span>hours</span></div>
-              <div><strong id="eventMinutesLeft">--</strong><span>minutes</span></div>
-              <div><strong id="eventSecondsLeft">--</strong><span>seconds</span></div>
-            </div>
-          </div>
           <div class="detail-grid">
             <article class="detail-card">
               <span class="detail-label">When</span>
@@ -116,9 +107,16 @@
               </div>
             </article>
             <article class="detail-card">
-              <span class="detail-label">Reply By</span>
-              <strong>July 31, 2026</strong>
-              <p>Sign in with Google so your RSVP and uploads stay attached to you.</p>
+              <span class="detail-label">Countdown</span>
+              <div class="tile-countdown event-countdown" aria-label="Countdown to the reception">
+                <p>Event starts in</p>
+                <strong>
+                  <span id="eventDaysLeft">--</span>d
+                  <span id="eventHoursLeft">--</span>h
+                  <span id="eventMinutesLeft">--</span>m
+                  <span id="eventSecondsLeft">--</span>s
+                </strong>
+              </div>
             </article>
             <article class="detail-card dress-card">
               <div>
@@ -128,32 +126,6 @@
               </div>
               <img src="assets/dress-code.png" alt="Cocktail dress and evening outfit illustration" />
             </article>
-            <article class="detail-card weather-card">
-              <div class="weather-card-head">
-                <div>
-                  <span class="detail-label">Live Weather</span>
-                  <strong id="weatherTemp">Checking Durham...</strong>
-                </div>
-                <div class="weather-art is-loading" id="weatherArt" aria-hidden="true">
-                  <span class="sun"></span>
-                  <span class="cloud cloud-one"></span>
-                  <span class="cloud cloud-two"></span>
-                  <span class="rain"></span>
-                  <span class="bolt"></span>
-                </div>
-              </div>
-              <p id="weatherCondition">
-                Pulling the latest weather near The Glasshouse Kitchen.
-              </p>
-              <p class="weather-meta" id="weatherUpdated">
-                Forecast data by
-                <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>.
-              </p>
-              <p class="weather-seasonal">
-                Seasonal note: RDU climate normal for September 6 is 85°F / 65°F
-                with 0.16" average precipitation.
-              </p>
-            </article>
           </div>
         </section>
 
@@ -162,14 +134,14 @@
             <p class="eyebrow">Kindly Respond</p>
             <h2 id="rsvpTitle">RSVP</h2>
           </div>
-          <div class="countdown rsvp-countdown" aria-label="Countdown to the RSVP deadline">
+          <div class="compact-countdown rsvp-countdown" aria-label="Countdown to the RSVP deadline">
             <p>RSVP before July 31</p>
-            <div class="countdown-grid">
-              <div><strong id="rsvpDaysLeft">--</strong><span>days</span></div>
-              <div><strong id="rsvpHoursLeft">--</strong><span>hours</span></div>
-              <div><strong id="rsvpMinutesLeft">--</strong><span>minutes</span></div>
-              <div><strong id="rsvpSecondsLeft">--</strong><span>seconds</span></div>
-            </div>
+            <strong>
+              <span id="rsvpDaysLeft">--</span>d
+              <span id="rsvpHoursLeft">--</span>h
+              <span id="rsvpMinutesLeft">--</span>m
+              <span id="rsvpSecondsLeft">--</span>s
+            </strong>
           </div>
           <form class="panel form-panel" id="rsvpForm">
             <div class="auth-required" data-auth-required>
