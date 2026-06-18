@@ -1,0 +1,371 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const eventStart = new Date("2026-09-06T18:30:00-04:00");
+const placeholderProjectId = "YOUR_PROJECT_ID";
+
+const elements = {
+  adminNav: document.querySelector("#adminNav"),
+  adminSection: document.querySelector("#admin"),
+  authButton: document.querySelector("#authButton"),
+  authButtonText: document.querySelector("#authButtonText"),
+  daysLeft: document.querySelector("#daysLeft"),
+  hoursLeft: document.querySelector("#hoursLeft"),
+  minutesLeft: document.querySelector("#minutesLeft"),
+  guestName: document.querySelector("#guestName"),
+  guestEmail: document.querySelector("#guestEmail"),
+  partySize: document.querySelector("#partySize"),
+  rsvpForm: document.querySelector("#rsvpForm"),
+  rsvpStatus: document.querySelector("#rsvpStatus"),
+  photoInput: document.querySelector("#photoInput"),
+  fileSummary: document.querySelector("#fileSummary"),
+  uploadButton: document.querySelector("#uploadButton"),
+  uploadProgress: document.querySelector("#uploadProgress"),
+  uploadStatus: document.querySelector("#uploadStatus"),
+  refreshRsvps: document.querySelector("#refreshRsvps"),
+  refreshUploads: document.querySelector("#refreshUploads"),
+  rsvpRows: document.querySelector("#rsvpRows"),
+  uploadGallery: document.querySelector("#uploadGallery"),
+};
+
+const appState = {
+  user: null,
+  isAdmin: false,
+  auth: null,
+  db: null,
+  storage: null,
+};
+
+function updateCountdown() {
+  const delta = Math.max(eventStart.getTime() - Date.now(), 0);
+  const totalMinutes = Math.floor(delta / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  elements.daysLeft.textContent = String(days);
+  elements.hoursLeft.textContent = String(hours).padStart(2, "0");
+  elements.minutesLeft.textContent = String(minutes).padStart(2, "0");
+}
+
+function setStatus(element, message, isError = false) {
+  element.textContent = message;
+  element.style.color = isError ? "#ffcabd" : "";
+}
+
+function setSignedInUi(user) {
+  document.body.classList.toggle("is-signed-in", Boolean(user));
+  elements.authButtonText.textContent = user ? "Sign out" : "Sign in";
+  elements.guestName.value = user?.displayName || elements.guestName.value || "";
+  elements.guestEmail.value = user?.email || elements.guestEmail.value || "";
+}
+
+function isConfigured() {
+  return firebaseConfig.projectId && firebaseConfig.projectId !== placeholderProjectId;
+}
+
+function requireUser(statusElement) {
+  if (!appState.user) {
+    setStatus(statusElement, "Please sign in with Google first.", true);
+    return false;
+  }
+  return true;
+}
+
+function safeText(value) {
+  return value == null || value === "" ? "-" : String(value);
+}
+
+function appendCell(row, ...values) {
+  const cell = document.createElement("td");
+  values.forEach((value, index) => {
+    if (index > 0) cell.append(document.createElement("br"));
+    const node = index > 0 ? document.createElement("small") : document.createElement("span");
+    node.textContent = safeText(value);
+    cell.append(node);
+  });
+  row.append(cell);
+}
+
+function getSelectedAttendance(form) {
+  return new FormData(form).get("attendance");
+}
+
+async function loadMyRsvp(user) {
+  const snapshot = await getDoc(doc(appState.db, "rsvps", user.uid));
+  if (!snapshot.exists()) return;
+
+  const data = snapshot.data();
+  elements.guestName.value = data.guestName || user.displayName || "";
+  elements.guestEmail.value = data.guestEmail || user.email || "";
+  elements.partySize.value = data.partySize || 1;
+  document.querySelector("#dietary").value = data.dietary || "";
+  document.querySelector("#message").value = data.message || "";
+
+  const radio = document.querySelector(`input[name="attendance"][value="${data.attendance}"]`);
+  if (radio) radio.checked = true;
+  setStatus(elements.rsvpStatus, "Your saved RSVP is loaded.");
+}
+
+async function checkAdmin(user) {
+  const snapshot = await getDoc(doc(appState.db, "admins", user.uid));
+  appState.isAdmin = snapshot.exists();
+  elements.adminNav.hidden = !appState.isAdmin;
+  elements.adminSection.hidden = !appState.isAdmin;
+
+  if (appState.isAdmin) {
+    await Promise.all([loadRsvps(), loadUploads()]);
+  }
+}
+
+async function handleAuthClick() {
+  if (!isConfigured()) {
+    alert("Add your Firebase web config in src/firebase-config.js before using sign-in.");
+    return;
+  }
+
+  if (appState.user) {
+    await signOut(appState.auth);
+    return;
+  }
+
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  await signInWithPopup(appState.auth, provider);
+}
+
+async function handleRsvp(event) {
+  event.preventDefault();
+  if (!requireUser(elements.rsvpStatus)) return;
+
+  const attendance = getSelectedAttendance(elements.rsvpForm);
+  if (!attendance) {
+    setStatus(elements.rsvpStatus, "Please choose your RSVP response.", true);
+    return;
+  }
+
+  const payload = {
+    uid: appState.user.uid,
+    guestName: elements.guestName.value.trim(),
+    guestEmail: elements.guestEmail.value.trim(),
+    attendance,
+    partySize: Number(elements.partySize.value),
+    dietary: document.querySelector("#dietary").value.trim(),
+    message: document.querySelector("#message").value.trim(),
+    googleName: appState.user.displayName || "",
+    googleEmail: appState.user.email || "",
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(doc(appState.db, "rsvps", appState.user.uid), payload, { merge: true });
+  setStatus(elements.rsvpStatus, "RSVP saved. Thank you.");
+  if (appState.isAdmin) await loadRsvps();
+}
+
+function uploadOneFile(file, index, total) {
+  return new Promise((resolve, reject) => {
+    const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+    const path = `eventUploads/${appState.user.uid}/${Date.now()}-${index}-${safeName}`;
+    const storageRef = ref(appState.storage, path);
+    const task = uploadBytesResumable(storageRef, file, {
+      contentType: file.type || "application/octet-stream",
+      customMetadata: {
+        ownerUid: appState.user.uid,
+        ownerEmail: appState.user.email || "",
+      },
+    });
+
+    task.on(
+      "state_changed",
+      (snapshot) => {
+        const fileProgress = snapshot.bytesTransferred / snapshot.totalBytes;
+        const totalProgress = ((index + fileProgress) / total) * 100;
+        elements.uploadProgress.value = Math.round(totalProgress);
+      },
+      reject,
+      async () => {
+        await setDoc(doc(collection(appState.db, "uploads")), {
+          ownerUid: appState.user.uid,
+          ownerName: appState.user.displayName || "",
+          ownerEmail: appState.user.email || "",
+          storagePath: path,
+          originalName: file.name,
+          contentType: file.type || "",
+          size: file.size,
+          uploadedAt: serverTimestamp(),
+        });
+        resolve();
+      }
+    );
+  });
+}
+
+async function handleUpload() {
+  if (!requireUser(elements.uploadStatus)) return;
+
+  const files = Array.from(elements.photoInput.files || []);
+  if (!files.length) {
+    setStatus(elements.uploadStatus, "Choose one or more photos first.", true);
+    return;
+  }
+
+  elements.uploadButton.disabled = true;
+  elements.uploadProgress.hidden = false;
+  elements.uploadProgress.value = 0;
+  setStatus(elements.uploadStatus, "Uploading privately...");
+
+  try {
+    for (const [index, file] of files.entries()) {
+      await uploadOneFile(file, index, files.length);
+    }
+
+    elements.photoInput.value = "";
+    elements.uploadProgress.value = 100;
+    setStatus(
+      elements.uploadStatus,
+      `${files.length} private upload${files.length === 1 ? "" : "s"} received. Only Pallavi and Aditya can view them.`
+    );
+    if (appState.isAdmin) await loadUploads();
+  } catch (error) {
+    setStatus(elements.uploadStatus, error.message || "Upload failed.", true);
+  } finally {
+    elements.uploadButton.disabled = false;
+  }
+}
+
+async function loadRsvps() {
+  if (!appState.isAdmin) return;
+  elements.rsvpRows.innerHTML = `<tr><td colspan="4">Loading...</td></tr>`;
+
+  const snapshot = await getDocs(query(collection(appState.db, "rsvps"), orderBy("updatedAt", "desc")));
+  if (snapshot.empty) {
+    elements.rsvpRows.innerHTML = `<tr><td colspan="4">No RSVPs yet.</td></tr>`;
+    return;
+  }
+
+  elements.rsvpRows.innerHTML = "";
+  snapshot.forEach((docSnapshot) => {
+    const data = docSnapshot.data();
+    const row = document.createElement("tr");
+    appendCell(row, data.guestName, data.guestEmail);
+    appendCell(row, data.attendance);
+    appendCell(row, data.partySize);
+    appendCell(row, data.dietary, data.message);
+    elements.rsvpRows.append(row);
+  });
+}
+
+async function loadUploads() {
+  if (!appState.isAdmin) return;
+  elements.uploadGallery.innerHTML = `<p>Loading...</p>`;
+
+  const snapshot = await getDocs(query(collection(appState.db, "uploads"), orderBy("uploadedAt", "desc")));
+  if (snapshot.empty) {
+    elements.uploadGallery.innerHTML = `<p>No uploads yet.</p>`;
+    return;
+  }
+
+  elements.uploadGallery.innerHTML = "";
+  for (const docSnapshot of snapshot.docs) {
+    const data = docSnapshot.data();
+    const url = await getDownloadURL(ref(appState.storage, data.storagePath));
+    const card = document.createElement("article");
+    const link = document.createElement("a");
+    const image = document.createElement("img");
+    const caption = document.createElement("span");
+
+    card.className = "upload-card";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    image.src = url;
+    image.alt = `Private upload from ${safeText(data.ownerName)}`;
+    image.loading = "lazy";
+    caption.textContent = `${safeText(data.ownerName)} - ${safeText(data.originalName)}`;
+
+    link.append(image);
+    card.append(link, caption);
+    elements.uploadGallery.append(card);
+  }
+}
+
+function initializeFirebase() {
+  if (!isConfigured()) {
+    setStatus(
+      elements.rsvpStatus,
+      "Firebase is not configured yet. Add your project config in src/firebase-config.js.",
+      true
+    );
+    setStatus(
+      elements.uploadStatus,
+      "Firebase is not configured yet. Add your project config in src/firebase-config.js.",
+      true
+    );
+    return;
+  }
+
+  const app = initializeApp(firebaseConfig);
+  appState.auth = getAuth(app);
+  appState.db = getFirestore(app);
+  appState.storage = getStorage(app);
+
+  onAuthStateChanged(appState.auth, async (user) => {
+    appState.user = user;
+    appState.isAdmin = false;
+    setSignedInUi(user);
+    elements.adminNav.hidden = true;
+    elements.adminSection.hidden = true;
+
+    if (user) {
+      try {
+        await Promise.all([loadMyRsvp(user), checkAdmin(user)]);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  });
+}
+
+elements.authButton.addEventListener("click", () => {
+  handleAuthClick().catch((error) => alert(error.message || "Authentication failed."));
+});
+elements.rsvpForm.addEventListener("submit", (event) => {
+  handleRsvp(event).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
+});
+elements.uploadButton.addEventListener("click", handleUpload);
+elements.photoInput.addEventListener("change", () => {
+  const count = elements.photoInput.files?.length || 0;
+  elements.fileSummary.textContent = count
+    ? `${count} photo${count === 1 ? "" : "s"} selected`
+    : "JPG, PNG, HEIC, and other image files are welcome.";
+});
+elements.refreshRsvps.addEventListener("click", () => loadRsvps().catch(console.error));
+elements.refreshUploads.addEventListener("click", () => loadUploads().catch(console.error));
+
+updateCountdown();
+setInterval(updateCountdown, 60000);
+initializeFirebase();

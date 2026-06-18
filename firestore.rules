@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwnRsvp(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.guestName is string
+        && request.resource.data.guestEmail is string
+        && request.resource.data.attendance in ["yes", "no", "maybe"]
+        && request.resource.data.partySize is int
+        && request.resource.data.partySize >= 1
+        && request.resource.data.partySize <= 12;
+    }
+
+    match /admins/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /rsvps/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isOwnRsvp(uid);
+      allow delete: if isAdmin();
+    }
+
+    match /uploads/{uploadId} {
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.storagePath.matches("eventUploads/" + request.auth.uid + "/.*")
+        && request.resource.data.originalName is string
+        && request.resource.data.size is int
+        && request.resource.data.size > 0;
+      allow get, list, update, delete: if isAdmin();
+    }
+  }
+}

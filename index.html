@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pallavi & Aditya Reception</title>
+    <meta
+      name="description"
+      content="Reception invitation, RSVP, and private photo uploads for Pallavi and Aditya."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Mea+Culpa&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="src/main.js"></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar" aria-label="Reception navigation">
+        <a class="brand" href="#invite" aria-label="Pallavi and Aditya home">
+          <span>P</span>
+          <span>&</span>
+          <span>A</span>
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#details">Details</a>
+          <a href="#rsvp">RSVP</a>
+          <a href="#photos">Photos</a>
+          <a href="#admin" id="adminNav" hidden>Dashboard</a>
+        </nav>
+        <button class="icon-button" id="authButton" type="button">
+          <span class="google-mark" aria-hidden="true">G</span>
+          <span id="authButtonText">Sign in</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="hero" id="invite">
+          <div class="hero-art" aria-hidden="true">
+            <img src="assets/reception-poster.png" alt="" />
+          </div>
+          <div class="hero-copy">
+            <p class="eyebrow">Reception Invitation</p>
+            <h1>Our Next Chapter</h1>
+            <p class="names">Pallavi & Aditya</p>
+            <p class="hero-date">
+              September 6, 2026 <span aria-hidden="true">|</span> 6:30 PM - 9:30 PM
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="#rsvp">RSVP</a>
+              <a class="button secondary" href="#photos">Upload photos</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="details-band" id="details" aria-labelledby="detailsTitle">
+          <div class="section-heading">
+            <p class="eyebrow">The Evening</p>
+            <h2 id="detailsTitle">A garden reception in Durham</h2>
+          </div>
+          <div class="detail-grid">
+            <article class="detail-card">
+              <span class="detail-label">When</span>
+              <strong>Sunday, September 6, 2026</strong>
+              <p>6:30 PM - 9:30 PM</p>
+            </article>
+            <article class="detail-card">
+              <span class="detail-label">Where</span>
+              <strong>The Glasshouse Kitchen</strong>
+              <p>Durham, North Carolina</p>
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=The%20Glasshouse%20Kitchen%20Durham"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open map
+              </a>
+            </article>
+            <article class="detail-card">
+              <span class="detail-label">Reply By</span>
+              <strong>August 15, 2026</strong>
+              <p>Sign in with Google so your RSVP and uploads stay attached to you.</p>
+            </article>
+          </div>
+          <div class="countdown" aria-label="Countdown to the reception">
+            <div><strong id="daysLeft">--</strong><span>days</span></div>
+            <div><strong id="hoursLeft">--</strong><span>hours</span></div>
+            <div><strong id="minutesLeft">--</strong><span>minutes</span></div>
+          </div>
+        </section>
+
+        <section class="form-band" id="rsvp" aria-labelledby="rsvpTitle">
+          <div class="section-heading">
+            <p class="eyebrow">Kindly Respond</p>
+            <h2 id="rsvpTitle">RSVP</h2>
+            <p>
+              Use Google sign-in to keep responses tidy. Guests can update their own RSVP later.
+            </p>
+          </div>
+          <form class="panel form-panel" id="rsvpForm">
+            <div class="auth-required" data-auth-required>
+              Sign in with Google to submit or update your RSVP.
+            </div>
+            <div class="field-row">
+              <label>
+                Full name
+                <input id="guestName" name="guestName" autocomplete="name" required />
+              </label>
+              <label>
+                Email
+                <input id="guestEmail" name="guestEmail" type="email" autocomplete="email" required />
+              </label>
+            </div>
+            <fieldset>
+              <legend>Will you attend?</legend>
+              <div class="segmented">
+                <label><input type="radio" name="attendance" value="yes" required /> Joyfully yes</label>
+                <label><input type="radio" name="attendance" value="no" /> Regretfully no</label>
+                <label><input type="radio" name="attendance" value="maybe" /> Not sure yet</label>
+              </div>
+            </fieldset>
+            <div class="field-row">
+              <label>
+                Number in party
+                <input id="partySize" name="partySize" type="number" min="1" max="12" value="1" required />
+              </label>
+              <label>
+                Dietary notes
+                <input id="dietary" name="dietary" placeholder="Vegetarian, allergies, etc." />
+              </label>
+            </div>
+            <label>
+              Message for us
+              <textarea id="message" name="message" rows="4" placeholder="Anything we should know?"></textarea>
+            </label>
+            <button class="button primary wide" type="submit">Submit RSVP</button>
+            <p class="status" id="rsvpStatus" role="status"></p>
+          </form>
+        </section>
+
+        <section class="photo-band" id="photos" aria-labelledby="photosTitle">
+          <div class="section-heading">
+            <p class="eyebrow">Private Memories</p>
+            <h2 id="photosTitle">Upload photos for us</h2>
+            <p>
+              Uploads go privately to Pallavi and Aditya. Guests will not see thumbnails,
+              filenames, or a gallery after uploading.
+            </p>
+          </div>
+          <div class="panel upload-panel">
+            <div class="auth-required" data-auth-required>
+              Sign in with Google to upload photos.
+            </div>
+            <label class="drop-zone" for="photoInput">
+              <input id="photoInput" type="file" accept="image/*,.heic,.heif" multiple />
+              <span>Choose photos</span>
+              <small id="fileSummary">JPG, PNG, HEIC, and other image files are welcome.</small>
+            </label>
+            <button class="button primary wide" id="uploadButton" type="button">Send privately</button>
+            <progress id="uploadProgress" value="0" max="100" hidden></progress>
+            <p class="status" id="uploadStatus" role="status"></p>
+          </div>
+        </section>
+
+        <section class="admin-band" id="admin" aria-labelledby="adminTitle" hidden>
+          <div class="section-heading">
+            <p class="eyebrow">Couple Dashboard</p>
+            <h2 id="adminTitle">RSVPs and private uploads</h2>
+            <p>Only users listed in Firestore as admins can see this section.</p>
+          </div>
+          <div class="admin-grid">
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>RSVPs</h3>
+                <button class="button secondary small" id="refreshRsvps" type="button">Refresh</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Response</th>
+                      <th>Party</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rsvpRows"></tbody>
+                </table>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <h3>Photo uploads</h3>
+                <button class="button secondary small" id="refreshUploads" type="button">Refresh</button>
+              </div>
+              <div class="upload-gallery" id="uploadGallery"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p>Pallavi & Aditya <span aria-hidden="true">|</span> September 6, 2026</p>
+      </footer>
+    </div>
+    <noscript>This invitation needs JavaScript for Google sign-in, RSVP, and photo uploads.</noscript>
+  </body>
+</html>
