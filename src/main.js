@@ -274,7 +274,7 @@ function renderPlaylist() {
     }
 
     title.textContent = song.title || "Spotify track";
-    meta.textContent = [song.artistName, song.addedByName].filter(Boolean).join(" | ");
+    meta.textContent = song.artistName || "";
     note.textContent = song.note || "";
 
     spotify.href = getBestPlatformUrl(song, "spotify");
@@ -333,9 +333,6 @@ async function handlePlaylistSubmit(event) {
     songlinkUrl: songLinks.pageUrl || "",
     platformLinks: songLinks.platformLinks,
     note: elements.songNote.value.trim(),
-    addedByUid: appState.user.uid,
-    addedByName: appState.user.displayName || "",
-    addedByEmail: appState.user.email || "",
     createdAt: serverTimestamp(),
   };
 
