@@ -10,7 +10,7 @@ Fancy floral Evite-style reception site with Google sign-in, RSVP collection, pr
 - Private image uploads in Cloud Storage for Firebase.
 - Admin-only RSVP List and Photos pages for `ap4839@columbia.edu` and `pallaviputcha@gmail.com`.
 - Live Durham weather pull through Open-Meteo, with matching sun/cloud/rain artwork.
-- Shared playlist requests backed by Firestore, with Spotify search, Spotify links, and Apple Music conversion through Songlink/Odesli.
+- Shared Apple Music playlist requests backed by Firestore, with Apple/iTunes search and a text export for Apple Music import tools.
 - Firestore and Storage security rules that prevent guests from viewing uploaded photos.
 - GitHub Actions workflow for GitHub Pages hosting.
 

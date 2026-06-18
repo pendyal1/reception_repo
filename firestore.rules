@@ -53,18 +53,20 @@ service cloud.firestore {
       allow get, list: if true;
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly([
-          "spotifyUrl",
+          "appleMusicUrl",
           "title",
           "artistName",
+          "collectionName",
           "thumbnailUrl",
-          "embedUrl",
-          "songlinkUrl",
-          "platformLinks",
+          "previewUrl",
           "note",
           "createdAt"
         ])
-        && request.resource.data.spotifyUrl is string
-        && request.resource.data.spotifyUrl.matches("https://open\\.spotify\\.com/track/.*")
+        && request.resource.data.appleMusicUrl is string
+        && (
+          request.resource.data.appleMusicUrl.matches("https://music\\.apple\\.com/.*")
+          || request.resource.data.appleMusicUrl.matches("https://itunes\\.apple\\.com/.*")
+        )
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
         && request.resource.data.title.size() <= 200

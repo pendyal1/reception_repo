@@ -220,7 +220,7 @@
           <div class="section-heading">
             <p class="eyebrow">Playlist</p>
             <h2 id="playlistTitle">Add a song for the evening</h2>
-            <p>Search Spotify, add a track link, and see the latest shared playlist.</p>
+            <p>Search Apple Music, add a song, and see the latest shared playlist.</p>
           </div>
           <div class="playlist-panel panel">
             <div class="auth-required" data-auth-required>
@@ -228,37 +228,36 @@
             </div>
             <div class="playlist-search">
               <label>
-                Search Spotify
-                <input id="spotifySearch" placeholder="Song or artist" />
+                Search Apple Music
+                <input id="appleSearch" placeholder="Song or artist" />
               </label>
-              <button class="button secondary" id="spotifySearchButton" type="button">
-                Search Spotify
+              <button class="button secondary" id="appleSearchButton" type="button">
+                Search Apple Music
               </button>
             </div>
-            <form class="playlist-form" id="playlistForm">
+            <div class="apple-results" id="appleResults" aria-live="polite">
+              <p class="empty-playlist">Search for a song to add it to the playlist.</p>
+            </div>
+            <div class="playlist-form">
               <label>
-                Spotify track link
-                <input
-                  id="spotifyTrackUrl"
-                  type="url"
-                  placeholder="https://open.spotify.com/track/..."
-                  required
-                />
-              </label>
-              <label>
-                Notes
+                Note for the next song
                 <input id="songNote" placeholder="Optional dedication or vibe" />
               </label>
-              <button class="button primary wide" type="submit">Add song</button>
               <p class="status" id="playlistStatus" role="status"></p>
-            </form>
+            </div>
             <div class="playlist-actions">
-              <button class="button secondary" id="downloadSpotifyPlaylist" type="button" disabled>
-                Download Spotify playlist
-              </button>
               <button class="button secondary" id="downloadApplePlaylist" type="button" disabled>
-                Download Apple playlist
+                Download Apple Music list
               </button>
+              <a
+                class="button secondary"
+                id="importApplePlaylist"
+                href="https://www.tunemymusic.com/transfer/text-file-to-apple-music"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Create in Apple Music
+              </a>
             </div>
             <div class="shared-playlist" id="sharedPlaylist" aria-live="polite">
               <p class="empty-playlist">Loading latest playlist...</p>

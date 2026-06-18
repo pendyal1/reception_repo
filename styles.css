@@ -155,10 +155,10 @@ textarea {
 .nav-couple-name {
   max-width: 0;
   color: var(--ink);
-  font-family: "Cormorant Garamond", serif;
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
-  font-weight: 700;
-  line-height: 1;
+  font-family: "Mea Culpa", cursive;
+  font-size: clamp(2.2rem, 3.4vw, 3.1rem);
+  font-weight: 400;
+  line-height: 0.72;
   white-space: nowrap;
   opacity: 0;
   overflow: hidden;
@@ -167,7 +167,7 @@ textarea {
 }
 
 .show-nav-title .nav-couple-name {
-  max-width: 14rem;
+  max-width: 16rem;
   opacity: 1;
   transform: translateX(0);
 }
@@ -788,6 +788,11 @@ fieldset {
   gap: 0.75rem;
 }
 
+.apple-results {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .empty-playlist {
   margin: 0;
   color: rgba(255, 248, 231, 0.72);
@@ -797,6 +802,17 @@ fieldset {
 .playlist-song {
   display: grid;
   grid-template-columns: 4.25rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid rgba(241, 183, 87, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 248, 231, 0.08);
+}
+
+.apple-result {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr) auto;
   gap: 0.85rem;
   align-items: center;
   padding: 0.75rem;
@@ -1041,7 +1057,8 @@ footer {
   }
 
   .show-nav-title .nav-couple-name {
-    max-width: 9rem;
+    max-width: 11rem;
+    font-size: 2.05rem;
   }
 
   .hero {
@@ -1063,7 +1080,12 @@ footer {
   .field-row,
   .segmented,
   .countdown,
-  .playlist-search {
+  .playlist-search,
+  .apple-result {
     grid-template-columns: 1fr;
+  }
+
+  .apple-result .playlist-art {
+    justify-self: start;
   }
 }

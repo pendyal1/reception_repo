@@ -49,14 +49,12 @@ const elements = {
   rsvpStatus: document.querySelector("#rsvpStatus"),
   photoInput: document.querySelector("#photoInput"),
   fileSummary: document.querySelector("#fileSummary"),
-  spotifySearch: document.querySelector("#spotifySearch"),
-  spotifySearchButton: document.querySelector("#spotifySearchButton"),
-  spotifyTrackUrl: document.querySelector("#spotifyTrackUrl"),
+  appleSearch: document.querySelector("#appleSearch"),
+  appleSearchButton: document.querySelector("#appleSearchButton"),
+  appleResults: document.querySelector("#appleResults"),
   songNote: document.querySelector("#songNote"),
-  playlistForm: document.querySelector("#playlistForm"),
   playlistStatus: document.querySelector("#playlistStatus"),
   sharedPlaylist: document.querySelector("#sharedPlaylist"),
-  downloadSpotifyPlaylist: document.querySelector("#downloadSpotifyPlaylist"),
   downloadApplePlaylist: document.querySelector("#downloadApplePlaylist"),
   weatherArt: document.querySelector("#weatherArt"),
   weatherCondition: document.querySelector("#weatherCondition"),
@@ -154,19 +152,6 @@ function getSelectedAttendance(form) {
   return new FormData(form).get("attendance");
 }
 
-function isSpotifyTrackUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.hostname.includes("spotify.com") && url.pathname.includes("/track/");
-  } catch {
-    return false;
-  }
-}
-
-function getSpotifySearchUrl(queryText) {
-  return `https://open.spotify.com/search/${encodeURIComponent(queryText.trim())}`;
-}
-
 function downloadTextFile(filename, lines) {
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -181,58 +166,73 @@ function downloadTextFile(filename, lines) {
 
 function setPlaylistButtons() {
   const hasSongs = appState.playlistSongs.length > 0;
-  elements.downloadSpotifyPlaylist.disabled = !hasSongs;
   elements.downloadApplePlaylist.disabled = !hasSongs;
 }
 
-function getBestPlatformUrl(song, platform) {
-  return song.platformLinks?.[platform] || song.spotifyUrl || "";
+function getLargerArtworkUrl(url) {
+  return url ? url.replace("100x100bb", "300x300bb") : "";
 }
 
-async function fetchSpotifyMetadata(spotifyUrl) {
-  try {
-    const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyUrl)}`);
-    if (!response.ok) throw new Error("Spotify preview unavailable");
-    const data = await response.json();
-    return {
-      title: data.title || "Spotify track",
-      thumbnailUrl: data.thumbnail_url || "",
-      embedUrl: data.iframe_url || "",
-    };
-  } catch {
-    return {
-      title: "Spotify track",
-      thumbnailUrl: "",
-      embedUrl: "",
-    };
-  }
+function getAppleMusicUrl(song) {
+  return song.appleMusicUrl || "";
 }
 
-async function fetchSongLinks(spotifyUrl) {
-  try {
-    const response = await fetch(`https://api.song.link/v1-alpha.1/links?url=${encodeURIComponent(spotifyUrl)}`);
-    if (!response.ok) throw new Error("Songlink unavailable");
-    const data = await response.json();
-    const entity = data.entitiesByUniqueId?.[data.entityUniqueId] || {};
-    return {
-      title: entity.title || "",
-      artistName: entity.artistName || "",
-      thumbnailUrl: entity.thumbnailUrl || "",
-      pageUrl: data.pageUrl || "",
-      platformLinks: {
-        spotify: data.linksByPlatform?.spotify?.url || spotifyUrl,
-        appleMusic: data.linksByPlatform?.appleMusic?.url || "",
-      },
-    };
-  } catch {
-    return {
-      title: "",
-      artistName: "",
-      thumbnailUrl: "",
-      pageUrl: "",
-      platformLinks: { spotify: spotifyUrl, appleMusic: "" },
-    };
+function getSongExportLine(song) {
+  const title = song.title || "Untitled song";
+  const artist = song.artistName || "";
+  const appleUrl = getAppleMusicUrl(song);
+  const label = artist ? `${artist} - ${title}` : title;
+  return appleUrl ? `${label} | ${appleUrl}` : label;
+}
+
+function renderAppleResults(results) {
+  elements.appleResults.innerHTML = "";
+
+  if (!results.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-playlist";
+    empty.textContent = "No Apple Music results found. Try a different song or artist.";
+    elements.appleResults.append(empty);
+    return;
   }
+
+  results.forEach((result) => {
+    const item = document.createElement("article");
+    const art = document.createElement("div");
+    const details = document.createElement("div");
+    const title = document.createElement("strong");
+    const meta = document.createElement("span");
+    const album = document.createElement("small");
+    const addButton = document.createElement("button");
+
+    item.className = "apple-result";
+    art.className = "playlist-art";
+    details.className = "playlist-song-details";
+    addButton.className = "button secondary";
+    addButton.type = "button";
+    addButton.textContent = "Add song";
+
+    if (result.artworkUrl100) {
+      const image = document.createElement("img");
+      image.src = getLargerArtworkUrl(result.artworkUrl100);
+      image.alt = "";
+      image.loading = "lazy";
+      art.append(image);
+    } else {
+      art.textContent = "♪";
+    }
+
+    title.textContent = result.trackName || "Apple Music song";
+    meta.textContent = result.artistName || "Unknown artist";
+    album.textContent = result.collectionName || "";
+    addButton.addEventListener("click", () => {
+      addAppleSong(result).catch((error) => setStatus(elements.playlistStatus, error.message, true));
+    });
+
+    details.append(title, meta, album);
+    item.append(art, details, addButton);
+    elements.appleResults.append(item);
+  });
 }
 
 function renderPlaylist() {
@@ -255,7 +255,6 @@ function renderPlaylist() {
     const meta = document.createElement("span");
     const note = document.createElement("small");
     const links = document.createElement("div");
-    const spotify = document.createElement("a");
     const apple = document.createElement("a");
 
     item.className = "playlist-song";
@@ -273,22 +272,25 @@ function renderPlaylist() {
       art.textContent = "♪";
     }
 
-    title.textContent = song.title || "Spotify track";
-    meta.textContent = song.artistName || "";
+    title.textContent = song.title || "Apple Music song";
+    meta.textContent = [song.artistName, song.collectionName].filter(Boolean).join(" - ");
     note.textContent = song.note || "";
 
-    spotify.href = getBestPlatformUrl(song, "spotify");
-    spotify.target = "_blank";
-    spotify.rel = "noreferrer";
-    spotify.textContent = "Spotify";
-
-    const appleUrl = getBestPlatformUrl(song, "appleMusic");
-    apple.href = appleUrl || `https://music.apple.com/search?term=${encodeURIComponent(song.title || "song")}`;
+    apple.href = getAppleMusicUrl(song) || `https://music.apple.com/search?term=${encodeURIComponent(song.title || "song")}`;
     apple.target = "_blank";
     apple.rel = "noreferrer";
-    apple.textContent = "Apple";
+    apple.textContent = "Apple Music";
 
-    links.append(spotify, apple);
+    if (song.previewUrl) {
+      const preview = document.createElement("a");
+      preview.href = song.previewUrl;
+      preview.target = "_blank";
+      preview.rel = "noreferrer";
+      preview.textContent = "Preview";
+      links.append(apple, preview);
+    } else {
+      links.append(apple);
+    }
     details.append(title, meta, note, links);
     item.append(art, details);
     elements.sharedPlaylist.append(item);
@@ -307,65 +309,59 @@ async function loadPlaylist() {
   renderPlaylist();
 }
 
-async function handlePlaylistSubmit(event) {
-  event.preventDefault();
+async function addAppleSong(result) {
   if (!requireUser(elements.playlistStatus)) return;
 
-  const spotifyUrl = elements.spotifyTrackUrl.value.trim();
-  if (!isSpotifyTrackUrl(spotifyUrl)) {
-    setStatus(elements.playlistStatus, "Paste a Spotify track link.", true);
+  if (!result.trackViewUrl || !result.trackName) {
+    setStatus(elements.playlistStatus, "Choose a valid Apple Music song.", true);
     return;
   }
 
   setStatus(elements.playlistStatus, "Adding song...");
-  const [spotifyMeta, songLinks] = await Promise.all([
-    fetchSpotifyMetadata(spotifyUrl),
-    fetchSongLinks(spotifyUrl),
-  ]);
-
-  const title = songLinks.title || spotifyMeta.title || "Spotify track";
   const payload = {
-    spotifyUrl,
-    title,
-    artistName: songLinks.artistName || "",
-    thumbnailUrl: songLinks.thumbnailUrl || spotifyMeta.thumbnailUrl || "",
-    embedUrl: spotifyMeta.embedUrl || "",
-    songlinkUrl: songLinks.pageUrl || "",
-    platformLinks: songLinks.platformLinks,
+    appleMusicUrl: result.trackViewUrl,
+    title: result.trackName,
+    artistName: result.artistName || "",
+    collectionName: result.collectionName || "",
+    thumbnailUrl: getLargerArtworkUrl(result.artworkUrl100),
+    previewUrl: result.previewUrl || "",
     note: elements.songNote.value.trim(),
     createdAt: serverTimestamp(),
   };
 
   await addDoc(collection(appState.db, "playlistSongs"), payload);
-  elements.playlistForm.reset();
-  setStatus(elements.playlistStatus, "Song added to the shared playlist.");
+  elements.songNote.value = "";
+  setStatus(elements.playlistStatus, "Song added to the Apple Music playlist.");
   await loadPlaylist();
 }
 
-function handleSpotifySearch() {
-  const queryText = elements.spotifySearch.value.trim();
+async function searchAppleMusic() {
+  const queryText = elements.appleSearch.value.trim();
   if (!queryText) {
-    setStatus(elements.playlistStatus, "Enter a song or artist to search Spotify.", true);
+    setStatus(elements.playlistStatus, "Enter a song or artist to search Apple Music.", true);
     return;
   }
-  window.open(getSpotifySearchUrl(queryText), "_blank", "noopener,noreferrer");
+
+  setStatus(elements.playlistStatus, "Searching Apple Music...");
+  const response = await fetch(
+    `https://itunes.apple.com/search?term=${encodeURIComponent(queryText)}&media=music&entity=song&limit=8`
+  );
+  if (!response.ok) throw new Error("Apple Music search is unavailable right now.");
+  const data = await response.json();
+  renderAppleResults(data.results || []);
+  setStatus(elements.playlistStatus, data.results?.length ? "Choose a song to add." : "");
 }
 
-function handlePlaylistDownload(platform) {
-  const key = platform === "apple" ? "appleMusic" : "spotify";
-  const lines = appState.playlistSongs
-    .map((song) => getBestPlatformUrl(song, key))
-    .filter(Boolean);
+function handlePlaylistDownload() {
+  const lines = appState.playlistSongs.map(getSongExportLine).filter(Boolean);
 
   if (!lines.length) {
-    setStatus(elements.playlistStatus, `No ${platform === "apple" ? "Apple Music" : "Spotify"} links yet.`, true);
+    setStatus(elements.playlistStatus, "No Apple Music songs yet.", true);
     return;
   }
 
-  downloadTextFile(
-    platform === "apple" ? "pallavi-aditya-apple-music-playlist.txt" : "pallavi-aditya-spotify-playlist.txt",
-    lines
-  );
+  downloadTextFile("pallavi-aditya-apple-music-playlist.txt", lines);
+  setStatus(elements.playlistStatus, "Apple Music list downloaded. Use Create in Apple Music to import it.");
 }
 
 function updateFlowerVisibility() {
@@ -676,12 +672,16 @@ elements.rsvpForm.addEventListener("submit", (event) => {
   handleRsvp(event).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
 });
 elements.uploadButton.addEventListener("click", handleUpload);
-elements.playlistForm.addEventListener("submit", (event) => {
-  handlePlaylistSubmit(event).catch((error) => setStatus(elements.playlistStatus, error.message, true));
+elements.appleSearchButton.addEventListener("click", () => {
+  searchAppleMusic().catch((error) => setStatus(elements.playlistStatus, error.message, true));
 });
-elements.spotifySearchButton.addEventListener("click", handleSpotifySearch);
-elements.downloadSpotifyPlaylist.addEventListener("click", () => handlePlaylistDownload("spotify"));
-elements.downloadApplePlaylist.addEventListener("click", () => handlePlaylistDownload("apple"));
+elements.appleSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    searchAppleMusic().catch((error) => setStatus(elements.playlistStatus, error.message, true));
+  }
+});
+elements.downloadApplePlaylist.addEventListener("click", handlePlaylistDownload);
 elements.photoInput.addEventListener("change", () => {
   const count = elements.photoInput.files?.length || 0;
   elements.fileSummary.textContent = count
