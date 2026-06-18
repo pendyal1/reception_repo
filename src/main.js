@@ -23,6 +23,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import {
   deleteObject,
+  getBlob,
   getDownloadURL,
   getStorage,
   ref,
@@ -71,6 +72,10 @@ const elements = {
   uploadStatus: document.querySelector("#uploadStatus"),
   refreshRsvps: document.querySelector("#refreshRsvps"),
   refreshUploads: document.querySelector("#refreshUploads"),
+  downloadRsvps: document.querySelector("#downloadRsvps"),
+  downloadUploads: document.querySelector("#downloadUploads"),
+  adminRsvpStatus: document.querySelector("#adminRsvpStatus"),
+  adminUploadStatus: document.querySelector("#adminUploadStatus"),
   rsvpRows: document.querySelector("#rsvpRows"),
   uploadGallery: document.querySelector("#uploadGallery"),
 };
@@ -129,6 +134,22 @@ function safeText(value) {
   return value == null || value === "" ? "-" : String(value);
 }
 
+function escapeHtml(value) {
+  return safeText(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function sanitizeFileName(value, fallback = "file") {
+  return (value || fallback).replace(/[^\w.\-]+/g, "_").replace(/^_+|_+$/g, "") || fallback;
+}
+
+function getDateStamp() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function hasAdminEmail(user) {
   return coupleAdminEmails.has((user?.email || "").toLowerCase());
 }
@@ -155,8 +176,7 @@ function getSelectedAttendance(form) {
   return new FormData(form).get("attendance");
 }
 
-function downloadTextFile(filename, lines) {
-  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -165,6 +185,34 @@ function downloadTextFile(filename, lines) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function downloadTextFile(filename, lines) {
+  downloadBlob(filename, new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" }));
+}
+
+function ensureZipLibrary() {
+  if (window.JSZip) return Promise.resolve(window.JSZip);
+
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector("script[data-jszip]");
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.JSZip), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Could not load ZIP exporter.")), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js";
+    script.async = true;
+    script.dataset.jszip = "true";
+    script.onload = () => resolve(window.JSZip);
+    script.onerror = () => {
+      script.remove();
+      reject(new Error("Could not load ZIP exporter."));
+    };
+    document.head.append(script);
+  });
 }
 
 function setPlaylistButtons() {
@@ -336,7 +384,7 @@ async function loadPlaylist() {
 
 function requireAdmin(statusElement) {
   if (!appState.isAdmin) {
-    setStatus(statusElement, "Playlist edits are only available to Pallavi and Aditya.", true);
+    setStatus(statusElement, "This action is only available to Pallavi and Aditya.", true);
     return false;
   }
   return true;
@@ -631,11 +679,19 @@ async function handleUpload() {
   }
 }
 
+function getRsvpQuery() {
+  return query(collection(appState.db, "rsvps"), orderBy("updatedAt", "desc"));
+}
+
+function getUploadQuery() {
+  return query(collection(appState.db, "uploads"), orderBy("uploadedAt", "desc"));
+}
+
 async function loadRsvps() {
   if (!appState.isAdmin) return;
   elements.rsvpRows.innerHTML = `<tr><td colspan="4">Loading...</td></tr>`;
 
-  const snapshot = await getDocs(query(collection(appState.db, "rsvps"), orderBy("updatedAt", "desc")));
+  const snapshot = await getDocs(getRsvpQuery());
   if (snapshot.empty) {
     elements.rsvpRows.innerHTML = `<tr><td colspan="4">No RSVPs yet.</td></tr>`;
     return;
@@ -662,10 +718,10 @@ async function loadRsvps() {
     editButton.textContent = "Edit";
     deleteButton.textContent = "Delete";
     editButton.addEventListener("click", () => {
-      editRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
+      editRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.adminRsvpStatus, error.message, true));
     });
     deleteButton.addEventListener("click", () => {
-      deleteRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
+      deleteRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.adminRsvpStatus, error.message, true));
     });
 
     controls.append(editButton, deleteButton);
@@ -676,7 +732,7 @@ async function loadRsvps() {
 }
 
 async function editRsvp(uid, data) {
-  if (!requireAdmin(elements.rsvpStatus)) return;
+  if (!requireAdmin(elements.adminRsvpStatus)) return;
 
   const guestName = window.prompt("Guest name", data.guestName || "");
   if (guestName === null) return;
@@ -686,7 +742,7 @@ async function editRsvp(uid, data) {
   if (attendance === null) return;
   const normalizedAttendance = attendance.trim().toLowerCase();
   if (!["yes", "no", "maybe"].includes(normalizedAttendance)) {
-    setStatus(elements.rsvpStatus, "Response must be yes, no, or maybe.", true);
+    setStatus(elements.adminRsvpStatus, "Response must be yes, no, or maybe.", true);
     return;
   }
   const dietary = window.prompt("Dietary notes", data.dietary || "");
@@ -702,26 +758,78 @@ async function editRsvp(uid, data) {
     message: message.trim(),
     updatedAt: serverTimestamp(),
   });
-  setStatus(elements.rsvpStatus, "RSVP updated.");
+  setStatus(elements.adminRsvpStatus, "RSVP updated.");
   await loadRsvps();
 }
 
 async function deleteRsvp(uid, data) {
-  if (!requireAdmin(elements.rsvpStatus)) return;
+  if (!requireAdmin(elements.adminRsvpStatus)) return;
 
   const confirmed = window.confirm(`Delete RSVP for ${data.guestName || data.guestEmail || "this guest"}?`);
   if (!confirmed) return;
 
   await deleteDoc(doc(appState.db, "rsvps", uid));
-  setStatus(elements.rsvpStatus, "RSVP deleted.");
+  setStatus(elements.adminRsvpStatus, "RSVP deleted.");
   await loadRsvps();
+}
+
+async function downloadRsvpsAsWord() {
+  if (!requireAdmin(elements.adminRsvpStatus)) return;
+
+  setStatus(elements.adminRsvpStatus, "Preparing RSVP Word file...");
+  const snapshot = await getDocs(getRsvpQuery());
+  if (snapshot.empty) {
+    setStatus(elements.adminRsvpStatus, "No RSVPs to download.", true);
+    return;
+  }
+
+  const rows = snapshot.docs
+    .map((docSnapshot) => {
+      const data = docSnapshot.data();
+      const name = `${escapeHtml(data.guestName)}<br><small>${escapeHtml(data.guestEmail)}</small>`;
+      const response = escapeHtml(data.attendance);
+      const notes = `${escapeHtml(data.dietary)}<br>${escapeHtml(data.message)}`;
+      return `<tr><td>${name}</td><td>${response}</td><td>${notes}</td></tr>`;
+    })
+    .join("");
+
+  const documentHtml = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pallavi & Aditya RSVP List</title>
+    <style>
+      body { font-family: Georgia, serif; color: #1f1f1f; }
+      h1 { color: #5b202b; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #9a7a3a; padding: 8px; vertical-align: top; }
+      th { background: #12382d; color: #fff8e7; text-align: left; }
+      small { color: #555; }
+    </style>
+  </head>
+  <body>
+    <h1>Pallavi & Aditya RSVP List</h1>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Response</th><th>Notes</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </body>
+</html>`;
+
+  downloadBlob(
+    `pallavi-aditya-rsvp-list-${getDateStamp()}.doc`,
+    new Blob(["\ufeff", documentHtml], { type: "application/msword;charset=utf-8" })
+  );
+  setStatus(elements.adminRsvpStatus, "RSVP Word file downloaded.");
 }
 
 async function loadUploads() {
   if (!appState.isAdmin) return;
   elements.uploadGallery.innerHTML = `<p>Loading...</p>`;
 
-  const snapshot = await getDocs(query(collection(appState.db, "uploads"), orderBy("uploadedAt", "desc")));
+  const snapshot = await getDocs(getUploadQuery());
   if (snapshot.empty) {
     elements.uploadGallery.innerHTML = `<p>No uploads yet.</p>`;
     return;
@@ -755,10 +863,10 @@ async function loadUploads() {
     image.loading = "lazy";
     caption.textContent = `${safeText(data.ownerName)} - ${safeText(data.originalName)}`;
     renameButton.addEventListener("click", () => {
-      renameUpload(docSnapshot.id, data).catch((error) => setStatus(elements.uploadStatus, error.message, true));
+      renameUpload(docSnapshot.id, data).catch((error) => setStatus(elements.adminUploadStatus, error.message, true));
     });
     deleteButton.addEventListener("click", () => {
-      deleteUpload(docSnapshot.id, data).catch((error) => setStatus(elements.uploadStatus, error.message, true));
+      deleteUpload(docSnapshot.id, data).catch((error) => setStatus(elements.adminUploadStatus, error.message, true));
     });
 
     link.append(image);
@@ -769,7 +877,7 @@ async function loadUploads() {
 }
 
 async function renameUpload(uploadId, data) {
-  if (!requireAdmin(elements.uploadStatus)) return;
+  if (!requireAdmin(elements.adminUploadStatus)) return;
 
   const ownerName = window.prompt("Uploaded by", data.ownerName || "");
   if (ownerName === null) return;
@@ -780,12 +888,12 @@ async function renameUpload(uploadId, data) {
     ownerName: ownerName.trim(),
     originalName: originalName.trim() || data.originalName || "Photo",
   });
-  setStatus(elements.uploadStatus, "Photo details updated.");
+  setStatus(elements.adminUploadStatus, "Photo details updated.");
   await loadUploads();
 }
 
 async function deleteUpload(uploadId, data) {
-  if (!requireAdmin(elements.uploadStatus)) return;
+  if (!requireAdmin(elements.adminUploadStatus)) return;
 
   const confirmed = window.confirm(`Delete ${data.originalName || "this photo"}?`);
   if (!confirmed) return;
@@ -796,8 +904,43 @@ async function deleteUpload(uploadId, data) {
     if (error.code !== "storage/object-not-found") throw error;
   }
   await deleteDoc(doc(appState.db, "uploads", uploadId));
-  setStatus(elements.uploadStatus, "Photo deleted.");
+  setStatus(elements.adminUploadStatus, "Photo deleted.");
   await loadUploads();
+}
+
+async function downloadUploadsAsZip() {
+  if (!requireAdmin(elements.adminUploadStatus)) return;
+
+  elements.downloadUploads.disabled = true;
+  setStatus(elements.adminUploadStatus, "Preparing photo ZIP...");
+
+  try {
+    const snapshot = await getDocs(getUploadQuery());
+    if (snapshot.empty) {
+      setStatus(elements.adminUploadStatus, "No photos to download.", true);
+      return;
+    }
+
+    const JSZip = await ensureZipLibrary();
+    const zip = new JSZip();
+    let count = 0;
+
+    for (const [index, docSnapshot] of snapshot.docs.entries()) {
+      const data = docSnapshot.data();
+      setStatus(elements.adminUploadStatus, `Adding photo ${index + 1} of ${snapshot.size}...`);
+      const blob = await getBlob(ref(appState.storage, data.storagePath));
+      const owner = sanitizeFileName(data.ownerName || data.ownerEmail || "guest", "guest");
+      const originalName = sanitizeFileName(data.originalName || `photo-${index + 1}`, `photo-${index + 1}`);
+      zip.file(`${String(index + 1).padStart(2, "0")}-${owner}-${originalName}`, blob);
+      count += 1;
+    }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    downloadBlob(`pallavi-aditya-photos-${getDateStamp()}.zip`, zipBlob);
+    setStatus(elements.adminUploadStatus, `${count} photo${count === 1 ? "" : "s"} downloaded as a ZIP.`);
+  } finally {
+    elements.downloadUploads.disabled = false;
+  }
 }
 
 function initializeFirebase() {
@@ -868,6 +1011,12 @@ elements.photoInput.addEventListener("change", () => {
 });
 elements.refreshRsvps.addEventListener("click", () => loadRsvps().catch(console.error));
 elements.refreshUploads.addEventListener("click", () => loadUploads().catch(console.error));
+elements.downloadRsvps.addEventListener("click", () => {
+  downloadRsvpsAsWord().catch((error) => setStatus(elements.adminRsvpStatus, error.message, true));
+});
+elements.downloadUploads.addEventListener("click", () => {
+  downloadUploadsAsZip().catch((error) => setStatus(elements.adminUploadStatus, error.message, true));
+});
 window.addEventListener("scroll", updateFlowerVisibility, { passive: true });
 window.addEventListener("resize", updateFlowerVisibility);
 

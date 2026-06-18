@@ -278,7 +278,10 @@
             <section class="panel admin-panel" id="admin-rsvps">
               <div class="panel-heading">
                 <h3>RSVP List</h3>
-                <button class="button secondary small" id="refreshRsvps" type="button">Refresh</button>
+                <div class="panel-actions">
+                  <button class="button secondary small" id="downloadRsvps" type="button">Download Word</button>
+                  <button class="button secondary small" id="refreshRsvps" type="button">Refresh</button>
+                </div>
               </div>
               <div class="table-wrap">
                 <table>
@@ -293,13 +296,18 @@
                   <tbody id="rsvpRows"></tbody>
                 </table>
               </div>
+              <p class="status admin-status" id="adminRsvpStatus" role="status"></p>
             </section>
             <section class="panel admin-panel" id="admin-photos">
               <div class="panel-heading">
                 <h3>Photos Page</h3>
-                <button class="button secondary small" id="refreshUploads" type="button">Refresh</button>
+                <div class="panel-actions">
+                  <button class="button secondary small" id="downloadUploads" type="button">Download ZIP</button>
+                  <button class="button secondary small" id="refreshUploads" type="button">Refresh</button>
+                </div>
               </div>
               <div class="upload-gallery" id="uploadGallery"></div>
+              <p class="status admin-status" id="adminUploadStatus" role="status"></p>
             </section>
           </div>
         </section>

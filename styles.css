@@ -976,6 +976,13 @@ progress {
   font-size: 1.8rem;
 }
 
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
