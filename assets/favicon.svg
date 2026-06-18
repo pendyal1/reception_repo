@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="P&amp;A logo">
+  <rect width="512" height="512" rx="112" fill="#12382d"/>
+  <circle cx="256" cy="256" r="178" fill="#12382d" stroke="#f1b757" stroke-width="18"/>
+  <text x="256" y="184" text-anchor="middle" fill="#fff8e7" font-family="Georgia, serif" font-size="118" font-weight="700">P</text>
+  <text x="256" y="276" text-anchor="middle" fill="#f1b757" font-family="Georgia, serif" font-size="86" font-weight="700">&amp;</text>
+  <text x="256" y="384" text-anchor="middle" fill="#fff8e7" font-family="Georgia, serif" font-size="118" font-weight="700">A</text>
+</svg>
