@@ -18,6 +18,8 @@
     <script type="module" src="src/main.js"></script>
   </head>
   <body>
+    <div class="floral-rail floral-rail-left" aria-hidden="true"></div>
+    <div class="floral-rail floral-rail-right" aria-hidden="true"></div>
     <div class="site-shell">
       <header class="topbar" aria-label="Reception navigation">
         <a class="brand" href="#invite" aria-label="Pallavi and Aditya home">
@@ -29,7 +31,8 @@
           <a href="#details">Details</a>
           <a href="#rsvp">RSVP</a>
           <a href="#photos">Photos</a>
-          <a href="#admin" id="adminNav" hidden>Dashboard</a>
+          <a href="#admin-rsvps" class="admin-link" hidden>RSVP List</a>
+          <a href="#admin-photos" class="admin-link" hidden>Photos</a>
         </nav>
         <button class="icon-button" id="authButton" type="button">
           <span class="google-mark" aria-hidden="true">G</span>
@@ -81,14 +84,23 @@
             </article>
             <article class="detail-card">
               <span class="detail-label">Reply By</span>
-              <strong>August 15, 2026</strong>
+              <strong>July 31, 2026</strong>
               <p>Sign in with Google so your RSVP and uploads stay attached to you.</p>
+            </article>
+            <article class="detail-card weather-card">
+              <span class="detail-label">Expected Weather</span>
+              <strong>Warm evening, likely mid 70s</strong>
+              <p>
+                RDU climate normal for September 6 is 85°F / 65°F with 0.16"
+                average precipitation. Exact forecast appears closer to the event.
+              </p>
             </article>
           </div>
           <div class="countdown" aria-label="Countdown to the reception">
             <div><strong id="daysLeft">--</strong><span>days</span></div>
             <div><strong id="hoursLeft">--</strong><span>hours</span></div>
             <div><strong id="minutesLeft">--</strong><span>minutes</span></div>
+            <div><strong id="secondsLeft">--</strong><span>seconds</span></div>
           </div>
         </section>
 
@@ -122,16 +134,10 @@
                 <label><input type="radio" name="attendance" value="maybe" /> Not sure yet</label>
               </div>
             </fieldset>
-            <div class="field-row">
-              <label>
-                Number in party
-                <input id="partySize" name="partySize" type="number" min="1" max="12" value="1" required />
-              </label>
-              <label>
-                Dietary notes
-                <input id="dietary" name="dietary" placeholder="Vegetarian, allergies, etc." />
-              </label>
-            </div>
+            <label>
+              Dietary notes
+              <input id="dietary" name="dietary" placeholder="Vegetarian, allergies, etc." />
+            </label>
             <label>
               Message for us
               <textarea id="message" name="message" rows="4" placeholder="Anything we should know?"></textarea>
@@ -169,12 +175,16 @@
           <div class="section-heading">
             <p class="eyebrow">Couple Dashboard</p>
             <h2 id="adminTitle">RSVPs and private uploads</h2>
-            <p>Only users listed in Firestore as admins can see this section.</p>
+            <p>Only Pallavi and Aditya can see this section.</p>
           </div>
-          <div class="admin-grid">
-            <section class="panel">
+          <div class="admin-tabs" aria-label="Couple dashboard tabs">
+            <a class="button secondary" href="#admin-rsvps">RSVP List</a>
+            <a class="button secondary" href="#admin-photos">Photos Page</a>
+          </div>
+          <div class="admin-stack">
+            <section class="panel admin-panel" id="admin-rsvps">
               <div class="panel-heading">
-                <h3>RSVPs</h3>
+                <h3>RSVP List</h3>
                 <button class="button secondary small" id="refreshRsvps" type="button">Refresh</button>
               </div>
               <div class="table-wrap">
@@ -183,7 +193,6 @@
                     <tr>
                       <th>Name</th>
                       <th>Response</th>
-                      <th>Party</th>
                       <th>Notes</th>
                     </tr>
                   </thead>
@@ -191,9 +200,9 @@
                 </table>
               </div>
             </section>
-            <section class="panel">
+            <section class="panel admin-panel" id="admin-photos">
               <div class="panel-heading">
-                <h3>Photo uploads</h3>
+                <h3>Photos Page</h3>
                 <button class="button secondary small" id="refreshUploads" type="button">Refresh</button>
               </div>
               <div class="upload-gallery" id="uploadGallery"></div>

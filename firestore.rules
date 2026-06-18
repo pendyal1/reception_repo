@@ -8,7 +8,11 @@ service cloud.firestore {
 
     function isAdmin() {
       return signedIn()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+        && (
+          request.auth.token.email == "ap4839@columbia.edu"
+          || request.auth.token.email == "pallaviputcha@gmail.com"
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
     }
 
     function isOwnRsvp(uid) {
@@ -19,8 +23,7 @@ service cloud.firestore {
         && request.resource.data.guestEmail is string
         && request.resource.data.attendance in ["yes", "no", "maybe"]
         && request.resource.data.partySize is int
-        && request.resource.data.partySize >= 1
-        && request.resource.data.partySize <= 12;
+        && request.resource.data.partySize == 1;
     }
 
     match /admins/{uid} {

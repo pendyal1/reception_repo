@@ -27,18 +27,19 @@ import { firebaseConfig } from "./firebase-config.js";
 
 const eventStart = new Date("2026-09-06T18:30:00-04:00");
 const placeholderProjectId = "YOUR_PROJECT_ID";
+const coupleAdminEmails = new Set(["ap4839@columbia.edu", "pallaviputcha@gmail.com"]);
 
 const elements = {
-  adminNav: document.querySelector("#adminNav"),
+  adminLinks: document.querySelectorAll(".admin-link"),
   adminSection: document.querySelector("#admin"),
   authButton: document.querySelector("#authButton"),
   authButtonText: document.querySelector("#authButtonText"),
   daysLeft: document.querySelector("#daysLeft"),
   hoursLeft: document.querySelector("#hoursLeft"),
   minutesLeft: document.querySelector("#minutesLeft"),
+  secondsLeft: document.querySelector("#secondsLeft"),
   guestName: document.querySelector("#guestName"),
   guestEmail: document.querySelector("#guestEmail"),
-  partySize: document.querySelector("#partySize"),
   rsvpForm: document.querySelector("#rsvpForm"),
   rsvpStatus: document.querySelector("#rsvpStatus"),
   photoInput: document.querySelector("#photoInput"),
@@ -62,14 +63,17 @@ const appState = {
 
 function updateCountdown() {
   const delta = Math.max(eventStart.getTime() - Date.now(), 0);
-  const totalMinutes = Math.floor(delta / 60000);
+  const totalSeconds = Math.floor(delta / 1000);
+  const totalMinutes = Math.floor(totalSeconds / 60);
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
+  const seconds = totalSeconds % 60;
 
   elements.daysLeft.textContent = String(days);
   elements.hoursLeft.textContent = String(hours).padStart(2, "0");
   elements.minutesLeft.textContent = String(minutes).padStart(2, "0");
+  elements.secondsLeft.textContent = String(seconds).padStart(2, "0");
 }
 
 function setStatus(element, message, isError = false) {
@@ -100,6 +104,17 @@ function safeText(value) {
   return value == null || value === "" ? "-" : String(value);
 }
 
+function hasAdminEmail(user) {
+  return coupleAdminEmails.has((user?.email || "").toLowerCase());
+}
+
+function setAdminUi(isAdmin) {
+  elements.adminLinks.forEach((link) => {
+    link.hidden = !isAdmin;
+  });
+  elements.adminSection.hidden = !isAdmin;
+}
+
 function appendCell(row, ...values) {
   const cell = document.createElement("td");
   values.forEach((value, index) => {
@@ -122,7 +137,6 @@ async function loadMyRsvp(user) {
   const data = snapshot.data();
   elements.guestName.value = data.guestName || user.displayName || "";
   elements.guestEmail.value = data.guestEmail || user.email || "";
-  elements.partySize.value = data.partySize || 1;
   document.querySelector("#dietary").value = data.dietary || "";
   document.querySelector("#message").value = data.message || "";
 
@@ -132,10 +146,13 @@ async function loadMyRsvp(user) {
 }
 
 async function checkAdmin(user) {
-  const snapshot = await getDoc(doc(appState.db, "admins", user.uid));
-  appState.isAdmin = snapshot.exists();
-  elements.adminNav.hidden = !appState.isAdmin;
-  elements.adminSection.hidden = !appState.isAdmin;
+  if (hasAdminEmail(user)) {
+    appState.isAdmin = true;
+  } else {
+    const snapshot = await getDoc(doc(appState.db, "admins", user.uid));
+    appState.isAdmin = snapshot.exists();
+  }
+  setAdminUi(appState.isAdmin);
 
   if (appState.isAdmin) {
     await Promise.all([loadRsvps(), loadUploads()]);
@@ -173,7 +190,7 @@ async function handleRsvp(event) {
     guestName: elements.guestName.value.trim(),
     guestEmail: elements.guestEmail.value.trim(),
     attendance,
-    partySize: Number(elements.partySize.value),
+    partySize: 1,
     dietary: document.querySelector("#dietary").value.trim(),
     message: document.querySelector("#message").value.trim(),
     googleName: appState.user.displayName || "",
@@ -259,11 +276,11 @@ async function handleUpload() {
 
 async function loadRsvps() {
   if (!appState.isAdmin) return;
-  elements.rsvpRows.innerHTML = `<tr><td colspan="4">Loading...</td></tr>`;
+  elements.rsvpRows.innerHTML = `<tr><td colspan="3">Loading...</td></tr>`;
 
   const snapshot = await getDocs(query(collection(appState.db, "rsvps"), orderBy("updatedAt", "desc")));
   if (snapshot.empty) {
-    elements.rsvpRows.innerHTML = `<tr><td colspan="4">No RSVPs yet.</td></tr>`;
+    elements.rsvpRows.innerHTML = `<tr><td colspan="3">No RSVPs yet.</td></tr>`;
     return;
   }
 
@@ -273,7 +290,6 @@ async function loadRsvps() {
     const row = document.createElement("tr");
     appendCell(row, data.guestName, data.guestEmail);
     appendCell(row, data.attendance);
-    appendCell(row, data.partySize);
     appendCell(row, data.dietary, data.message);
     elements.rsvpRows.append(row);
   });
@@ -337,8 +353,7 @@ function initializeFirebase() {
     appState.user = user;
     appState.isAdmin = false;
     setSignedInUi(user);
-    elements.adminNav.hidden = true;
-    elements.adminSection.hidden = true;
+    setAdminUi(false);
 
     if (user) {
       try {
@@ -367,5 +382,5 @@ elements.refreshRsvps.addEventListener("click", () => loadRsvps().catch(console.
 elements.refreshUploads.addEventListener("click", () => loadUploads().catch(console.error));
 
 updateCountdown();
-setInterval(updateCountdown, 60000);
+setInterval(updateCountdown, 1000);
 initializeFirebase();

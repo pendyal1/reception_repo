@@ -8,14 +8,21 @@ service firebase.storage {
 
     function isAdmin() {
       return signedIn()
-        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+        && (
+          request.auth.token.email == "ap4839@columbia.edu"
+          || request.auth.token.email == "pallaviputcha@gmail.com"
+          || firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+        );
     }
 
     match /eventUploads/{userId}/{fileName} {
       allow create: if signedIn()
         && request.auth.uid == userId
         && request.resource.size < 25 * 1024 * 1024
-        && request.resource.contentType.matches("image/.*");
+        && (
+          request.resource.contentType.matches("image/.*")
+          || request.resource.contentType == "application/octet-stream"
+        );
       allow read, list, update, delete: if isAdmin();
     }
 

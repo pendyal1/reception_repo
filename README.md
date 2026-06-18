@@ -8,7 +8,7 @@ Fancy floral Evite-style reception site with Google sign-in, RSVP collection, pr
 - Google sign-in through Firebase Authentication.
 - RSVP storage in Cloud Firestore.
 - Private image uploads in Cloud Storage for Firebase.
-- Admin-only RSVP and upload dashboard.
+- Admin-only RSVP List and Photos pages for `ap4839@columbia.edu` and `pallaviputcha@gmail.com`.
 - Firestore and Storage security rules that prevent guests from viewing uploaded photos.
 - GitHub Actions workflow for GitHub Pages hosting.
 
@@ -50,7 +50,21 @@ The Firebase web config is safe to ship in frontend code. The privacy boundary i
 
 ## Couple/Admin Access
 
-After you and your fiance sign in once, copy each Firebase Auth UID into Firestore:
+The couple dashboard is enabled directly for these Google sign-in emails:
+
+```text
+ap4839@columbia.edu
+pallaviputcha@gmail.com
+```
+
+Those emails see two extra navigation tabs after sign-in:
+
+```text
+RSVP List
+Photos
+```
+
+The rules also still support the older UID-based admin escape hatch. To add another admin later, copy their Firebase Auth UID into Firestore:
 
 ```text
 admins/{uid}
@@ -58,7 +72,11 @@ admins/{uid}
 
 The document can be empty. Any signed-in UID with an `admins/{uid}` document can view all RSVPs and photo uploads. Guests can upload photos, but they cannot read, list, or download uploads.
 
-For first-time bootstrapping, create the first admin document manually in the Firebase console. After that, admins can manage admin documents if you add a small management screen later.
+After changing admin emails or upload privacy rules, redeploy backend rules:
+
+```bash
+firebase deploy --only firestore:rules,storage --project pallavi-aditya-reception
+```
 
 ## GitHub Pages Hosting
 
@@ -83,3 +101,7 @@ In GitHub:
 ## Design Notes
 
 The page uses the uploaded poster as the primary art direction: dark garden greens, maroon paneling, gold borders, pale script, floral density, and South Asian reception details. The guest workflow stays intentionally simple: details, RSVP, private upload.
+
+Every RSVP is treated as one guest. The site stores `partySize: 1` for compatibility with the existing Firestore schema, but guests cannot choose a party size.
+
+The weather card uses Raleigh-Durham climate normals as a seasonal expectation because a reliable hourly forecast is not available this far before September 6, 2026.
