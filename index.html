@@ -31,6 +31,7 @@
           <a href="#details">Details</a>
           <a href="#rsvp">RSVP</a>
           <a href="#photos">Photos</a>
+          <a href="#playlist">Playlist</a>
           <a href="#admin-rsvps" class="admin-link" hidden>RSVP List</a>
           <a href="#admin-photos" class="admin-link" hidden>Photos</a>
         </nav>
@@ -61,8 +62,8 @@
 
         <section class="details-band" id="details" aria-labelledby="detailsTitle">
           <div class="section-heading">
-            <p class="eyebrow">The Evening</p>
-            <h2 id="detailsTitle">A garden reception in Durham</h2>
+            <p class="eyebrow">Evening</p>
+            <h2 id="detailsTitle">The Celebration</h2>
           </div>
           <div class="detail-grid">
             <article class="detail-card">
@@ -87,7 +88,7 @@
                   title="Map to The Glasshouse Kitchen"
                   loading="lazy"
                   referrerpolicy="no-referrer-when-downgrade"
-                  src="https://www.google.com/maps?q=The%20Glasshouse%20Kitchen%20Durham&output=embed"
+                  src="https://maps.google.com/maps?q=The%20Glasshouse%20Kitchen%20Durham&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 ></iframe>
                 <a
                   href="https://www.google.com/maps/search/?api=1&query=The%20Glasshouse%20Kitchen%20Durham"
@@ -132,7 +133,7 @@
               <div>
                 <span class="detail-label">Dress Code</span>
                 <strong>Cocktail dresses</strong>
-                <p>Dress for an elegant garden reception.</p>
+                <p>Pastel Colors are preferred ;)</p>
               </div>
               <img src="assets/dress-code.png" alt="Cocktail dress and evening outfit illustration" />
             </article>
@@ -205,9 +206,43 @@
               <span>Choose photos</span>
               <small id="fileSummary">JPG, PNG, HEIC, and other image files are welcome.</small>
             </label>
-            <button class="button primary wide" id="uploadButton" type="button">Send privately</button>
+            <button class="button primary wide" id="uploadButton" type="button">Send!</button>
             <progress id="uploadProgress" value="0" max="100" hidden></progress>
             <p class="status" id="uploadStatus" role="status"></p>
+          </div>
+        </section>
+
+        <section class="playlist-band" id="playlist" aria-labelledby="playlistTitle">
+          <div class="section-heading">
+            <p class="eyebrow">Playlist</p>
+            <h2 id="playlistTitle">Add a song for the evening</h2>
+            <p>Help shape the reception soundtrack on Apple Music or Spotify.</p>
+          </div>
+          <div class="playlist-grid">
+            <a
+              class="music-card"
+              href="https://music.apple.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="music-icon apple-icon" aria-hidden="true">♪</span>
+              <span>
+                <strong>Apple Music</strong>
+                <small>Add your song</small>
+              </span>
+            </a>
+            <a
+              class="music-card"
+              href="https://open.spotify.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span class="music-icon spotify-icon" aria-hidden="true">♪</span>
+              <span>
+                <strong>Spotify</strong>
+                <small>Add your song</small>
+              </span>
+            </a>
           </div>
         </section>
 

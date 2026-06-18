@@ -37,12 +37,11 @@ body::before {
   inset: 0;
   z-index: -2;
   content: "";
-  background-image: url("assets/reception-poster.png");
-  background-position: center top;
-  background-size: cover;
-  opacity: 0.18;
-  filter: blur(7px) saturate(0.85);
-  transform: scale(1.03);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(217, 156, 164, 0.16), transparent 22rem),
+    radial-gradient(circle at 78% 12%, rgba(241, 183, 87, 0.12), transparent 24rem),
+    linear-gradient(135deg, rgba(47, 96, 69, 0.2), rgba(91, 32, 43, 0.28));
+  opacity: 1;
 }
 
 body::after {
@@ -343,6 +342,7 @@ h1 {
 .details-band,
 .form-band,
 .photo-band,
+.playlist-band,
 .admin-band {
   padding: clamp(3.2rem, 7vw, 6rem) clamp(1rem, 4vw, 3rem);
 }
@@ -350,6 +350,10 @@ h1 {
 .details-band,
 .photo-band {
   background: rgba(255, 248, 231, 0.06);
+}
+
+.playlist-band {
+  background: rgba(16, 45, 37, 0.22);
 }
 
 .section-heading {
@@ -715,6 +719,67 @@ fieldset {
   gap: 1rem;
 }
 
+.playlist-grid {
+  display: grid;
+  max-width: 48rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 auto;
+}
+
+.music-card {
+  display: grid;
+  min-height: 9rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(241, 183, 87, 0.34);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(16, 45, 37, 0.72), rgba(91, 32, 43, 0.68)),
+    rgba(255, 248, 231, 0.08);
+  box-shadow: var(--shadow);
+  text-decoration: none;
+}
+
+.music-card strong,
+.music-card small {
+  display: block;
+}
+
+.music-card strong {
+  color: var(--ink);
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.music-card small {
+  margin-top: 0.35rem;
+  color: rgba(255, 248, 231, 0.72);
+  font-weight: 800;
+}
+
+.music-icon {
+  display: inline-grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #101b17;
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.apple-icon {
+  background: linear-gradient(135deg, #f7d0df, #fff8e7);
+}
+
+.spotify-icon {
+  background: linear-gradient(135deg, #9fe8a6, #f1b757);
+}
+
 .drop-zone {
   display: grid;
   min-height: 11rem;
@@ -918,7 +983,8 @@ footer {
 
   .field-row,
   .segmented,
-  .countdown {
+  .countdown,
+  .playlist-grid {
     grid-template-columns: 1fr;
   }
 }
