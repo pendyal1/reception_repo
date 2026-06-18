@@ -22,6 +22,7 @@ import {
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import {
+  deleteObject,
   getDownloadURL,
   getStorage,
   ref,
@@ -632,11 +633,11 @@ async function handleUpload() {
 
 async function loadRsvps() {
   if (!appState.isAdmin) return;
-  elements.rsvpRows.innerHTML = `<tr><td colspan="3">Loading...</td></tr>`;
+  elements.rsvpRows.innerHTML = `<tr><td colspan="4">Loading...</td></tr>`;
 
   const snapshot = await getDocs(query(collection(appState.db, "rsvps"), orderBy("updatedAt", "desc")));
   if (snapshot.empty) {
-    elements.rsvpRows.innerHTML = `<tr><td colspan="3">No RSVPs yet.</td></tr>`;
+    elements.rsvpRows.innerHTML = `<tr><td colspan="4">No RSVPs yet.</td></tr>`;
     return;
   }
 
@@ -644,11 +645,76 @@ async function loadRsvps() {
   snapshot.forEach((docSnapshot) => {
     const data = docSnapshot.data();
     const row = document.createElement("tr");
+    const actions = document.createElement("td");
+    const controls = document.createElement("div");
+    const editButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
+
     appendCell(row, data.guestName, data.guestEmail);
     appendCell(row, data.attendance);
     appendCell(row, data.dietary, data.message);
+
+    controls.className = "admin-row-actions";
+    editButton.className = "text-button";
+    deleteButton.className = "text-button danger";
+    editButton.type = "button";
+    deleteButton.type = "button";
+    editButton.textContent = "Edit";
+    deleteButton.textContent = "Delete";
+    editButton.addEventListener("click", () => {
+      editRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
+    });
+    deleteButton.addEventListener("click", () => {
+      deleteRsvp(docSnapshot.id, data).catch((error) => setStatus(elements.rsvpStatus, error.message, true));
+    });
+
+    controls.append(editButton, deleteButton);
+    actions.append(controls);
+    row.append(actions);
     elements.rsvpRows.append(row);
   });
+}
+
+async function editRsvp(uid, data) {
+  if (!requireAdmin(elements.rsvpStatus)) return;
+
+  const guestName = window.prompt("Guest name", data.guestName || "");
+  if (guestName === null) return;
+  const guestEmail = window.prompt("Guest email", data.guestEmail || "");
+  if (guestEmail === null) return;
+  const attendance = window.prompt("Response: yes, no, or maybe", data.attendance || "yes");
+  if (attendance === null) return;
+  const normalizedAttendance = attendance.trim().toLowerCase();
+  if (!["yes", "no", "maybe"].includes(normalizedAttendance)) {
+    setStatus(elements.rsvpStatus, "Response must be yes, no, or maybe.", true);
+    return;
+  }
+  const dietary = window.prompt("Dietary notes", data.dietary || "");
+  if (dietary === null) return;
+  const message = window.prompt("Message", data.message || "");
+  if (message === null) return;
+
+  await updateDoc(doc(appState.db, "rsvps", uid), {
+    guestName: guestName.trim(),
+    guestEmail: guestEmail.trim(),
+    attendance: normalizedAttendance,
+    dietary: dietary.trim(),
+    message: message.trim(),
+    updatedAt: serverTimestamp(),
+  });
+  setStatus(elements.rsvpStatus, "RSVP updated.");
+  await loadRsvps();
+}
+
+async function deleteRsvp(uid, data) {
+  if (!requireAdmin(elements.rsvpStatus)) return;
+
+  const confirmed = window.confirm(`Delete RSVP for ${data.guestName || data.guestEmail || "this guest"}?`);
+  if (!confirmed) return;
+
+  await deleteDoc(doc(appState.db, "rsvps", uid));
+  setStatus(elements.rsvpStatus, "RSVP deleted.");
+  await loadRsvps();
 }
 
 async function loadUploads() {
@@ -669,8 +735,18 @@ async function loadUploads() {
     const link = document.createElement("a");
     const image = document.createElement("img");
     const caption = document.createElement("span");
+    const controls = document.createElement("div");
+    const renameButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
 
     card.className = "upload-card";
+    controls.className = "upload-controls";
+    renameButton.className = "text-button";
+    deleteButton.className = "text-button danger";
+    renameButton.type = "button";
+    deleteButton.type = "button";
+    renameButton.textContent = "Rename";
+    deleteButton.textContent = "Delete";
     link.href = url;
     link.target = "_blank";
     link.rel = "noreferrer";
@@ -678,11 +754,50 @@ async function loadUploads() {
     image.alt = `Private upload from ${safeText(data.ownerName)}`;
     image.loading = "lazy";
     caption.textContent = `${safeText(data.ownerName)} - ${safeText(data.originalName)}`;
+    renameButton.addEventListener("click", () => {
+      renameUpload(docSnapshot.id, data).catch((error) => setStatus(elements.uploadStatus, error.message, true));
+    });
+    deleteButton.addEventListener("click", () => {
+      deleteUpload(docSnapshot.id, data).catch((error) => setStatus(elements.uploadStatus, error.message, true));
+    });
 
     link.append(image);
-    card.append(link, caption);
+    controls.append(renameButton, deleteButton);
+    card.append(link, caption, controls);
     elements.uploadGallery.append(card);
   }
+}
+
+async function renameUpload(uploadId, data) {
+  if (!requireAdmin(elements.uploadStatus)) return;
+
+  const ownerName = window.prompt("Uploaded by", data.ownerName || "");
+  if (ownerName === null) return;
+  const originalName = window.prompt("Photo label", data.originalName || "");
+  if (originalName === null) return;
+
+  await updateDoc(doc(appState.db, "uploads", uploadId), {
+    ownerName: ownerName.trim(),
+    originalName: originalName.trim() || data.originalName || "Photo",
+  });
+  setStatus(elements.uploadStatus, "Photo details updated.");
+  await loadUploads();
+}
+
+async function deleteUpload(uploadId, data) {
+  if (!requireAdmin(elements.uploadStatus)) return;
+
+  const confirmed = window.confirm(`Delete ${data.originalName || "this photo"}?`);
+  if (!confirmed) return;
+
+  try {
+    await deleteObject(ref(appState.storage, data.storagePath));
+  } catch (error) {
+    if (error.code !== "storage/object-not-found") throw error;
+  }
+  await deleteDoc(doc(appState.db, "uploads", uploadId));
+  setStatus(elements.uploadStatus, "Photo deleted.");
+  await loadUploads();
 }
 
 function initializeFirebase() {

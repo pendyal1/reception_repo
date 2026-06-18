@@ -35,7 +35,8 @@ service cloud.firestore {
     match /rsvps/{uid} {
       allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow list: if isAdmin();
-      allow create, update: if isOwnRsvp(uid);
+      allow create: if isOwnRsvp(uid);
+      allow update: if isOwnRsvp(uid) || isAdmin();
       allow delete: if isAdmin();
     }
 

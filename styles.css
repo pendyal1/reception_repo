@@ -895,6 +895,13 @@ fieldset {
   color: #ffcabd;
 }
 
+.admin-row-actions,
+.upload-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
 .drop-zone {
   display: grid;
   min-height: 11rem;
@@ -1023,6 +1030,10 @@ th {
   font-size: 0.8rem;
   font-weight: 800;
   overflow-wrap: anywhere;
+}
+
+.upload-card .upload-controls {
+  padding: 0 0.65rem 0.65rem;
 }
 
 footer {
