@@ -73,6 +73,15 @@
             <p class="eyebrow">Evening</p>
             <h2 id="detailsTitle">The Celebration</h2>
           </div>
+          <div class="countdown event-countdown" aria-label="Countdown to the reception">
+            <p>Event starts in</p>
+            <div class="countdown-grid">
+              <div><strong id="eventDaysLeft">--</strong><span>days</span></div>
+              <div><strong id="eventHoursLeft">--</strong><span>hours</span></div>
+              <div><strong id="eventMinutesLeft">--</strong><span>minutes</span></div>
+              <div><strong id="eventSecondsLeft">--</strong><span>seconds</span></div>
+            </div>
+          </div>
           <div class="detail-grid">
             <article class="detail-card">
               <span class="detail-label">When</span>
@@ -153,11 +162,14 @@
             <p class="eyebrow">Kindly Respond</p>
             <h2 id="rsvpTitle">RSVP</h2>
           </div>
-          <div class="countdown" aria-label="Countdown to the reception">
-            <div><strong id="daysLeft">--</strong><span>days</span></div>
-            <div><strong id="hoursLeft">--</strong><span>hours</span></div>
-            <div><strong id="minutesLeft">--</strong><span>minutes</span></div>
-            <div><strong id="secondsLeft">--</strong><span>seconds</span></div>
+          <div class="countdown rsvp-countdown" aria-label="Countdown to the RSVP deadline">
+            <p>RSVP before July 31</p>
+            <div class="countdown-grid">
+              <div><strong id="rsvpDaysLeft">--</strong><span>days</span></div>
+              <div><strong id="rsvpHoursLeft">--</strong><span>hours</span></div>
+              <div><strong id="rsvpMinutesLeft">--</strong><span>minutes</span></div>
+              <div><strong id="rsvpSecondsLeft">--</strong><span>seconds</span></div>
+            </div>
           </div>
           <form class="panel form-panel" id="rsvpForm">
             <div class="auth-required" data-auth-required>

@@ -618,21 +618,33 @@ h1 {
 }
 
 .countdown {
-  display: grid;
   max-width: 56rem;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.8rem;
   margin: 1.2rem auto;
 }
 
-.countdown div {
+.countdown p {
+  margin: 0 0 0.65rem;
+  color: var(--ink);
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+}
+
+.countdown-grid div {
   padding: 1.1rem;
   border: 1px solid rgba(241, 183, 87, 0.32);
   background: rgba(91, 32, 43, 0.58);
   text-align: center;
 }
 
-.countdown strong {
+.countdown-grid strong {
   display: block;
   color: var(--gold);
   font-family: "Cormorant Garamond", serif;
@@ -640,11 +652,28 @@ h1 {
   line-height: 0.9;
 }
 
-.countdown span {
+.countdown-grid span {
   color: rgba(255, 248, 231, 0.72);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.rsvp-countdown {
+  max-width: 48rem;
+}
+
+.rsvp-countdown p {
+  color: #f3c7bb;
+}
+
+.rsvp-countdown .countdown-grid div {
+  border-color: rgba(243, 199, 187, 0.42);
+  background: rgba(18, 56, 45, 0.72);
+}
+
+.rsvp-countdown .countdown-grid strong {
+  color: #f3c7bb;
 }
 
 .panel {
@@ -1121,7 +1150,7 @@ footer {
 
   .field-row,
   .segmented,
-  .countdown,
+  .countdown-grid,
   .playlist-search,
   .apple-result {
     grid-template-columns: 1fr;

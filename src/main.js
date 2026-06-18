@@ -32,6 +32,7 @@ import {
 import { firebaseConfig } from "./firebase-config.js";
 
 const eventStart = new Date("2026-09-06T18:30:00-04:00");
+const rsvpDeadline = new Date("2026-07-31T23:59:59-04:00");
 const placeholderProjectId = "YOUR_PROJECT_ID";
 const coupleAdminEmails = new Set(["ap4839@columbia.edu", "pallaviputcha@gmail.com"]);
 const weatherEndpoint =
@@ -43,10 +44,14 @@ const elements = {
   authButton: document.querySelector("#authButton"),
   authAvatar: document.querySelector("#authAvatar"),
   authButtonText: document.querySelector("#authButtonText"),
-  daysLeft: document.querySelector("#daysLeft"),
-  hoursLeft: document.querySelector("#hoursLeft"),
-  minutesLeft: document.querySelector("#minutesLeft"),
-  secondsLeft: document.querySelector("#secondsLeft"),
+  eventDaysLeft: document.querySelector("#eventDaysLeft"),
+  eventHoursLeft: document.querySelector("#eventHoursLeft"),
+  eventMinutesLeft: document.querySelector("#eventMinutesLeft"),
+  eventSecondsLeft: document.querySelector("#eventSecondsLeft"),
+  rsvpDaysLeft: document.querySelector("#rsvpDaysLeft"),
+  rsvpHoursLeft: document.querySelector("#rsvpHoursLeft"),
+  rsvpMinutesLeft: document.querySelector("#rsvpMinutesLeft"),
+  rsvpSecondsLeft: document.querySelector("#rsvpSecondsLeft"),
   guestName: document.querySelector("#guestName"),
   guestEmail: document.querySelector("#guestEmail"),
   rsvpForm: document.querySelector("#rsvpForm"),
@@ -89,19 +94,38 @@ const appState = {
   playlistSongs: [],
 };
 
-function updateCountdown() {
-  const delta = Math.max(eventStart.getTime() - Date.now(), 0);
+function getCountdownParts(targetDate) {
+  const delta = Math.max(targetDate.getTime() - Date.now(), 0);
   const totalSeconds = Math.floor(delta / 1000);
   const totalMinutes = Math.floor(totalSeconds / 60);
-  const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor((totalMinutes % 1440) / 60);
-  const minutes = totalMinutes % 60;
-  const seconds = totalSeconds % 60;
+  return {
+    days: Math.floor(totalMinutes / 1440),
+    hours: Math.floor((totalMinutes % 1440) / 60),
+    minutes: totalMinutes % 60,
+    seconds: totalSeconds % 60,
+  };
+}
 
-  elements.daysLeft.textContent = String(days);
-  elements.hoursLeft.textContent = String(hours).padStart(2, "0");
-  elements.minutesLeft.textContent = String(minutes).padStart(2, "0");
-  elements.secondsLeft.textContent = String(seconds).padStart(2, "0");
+function setCountdown(parts, slots) {
+  slots.days.textContent = String(parts.days);
+  slots.hours.textContent = String(parts.hours).padStart(2, "0");
+  slots.minutes.textContent = String(parts.minutes).padStart(2, "0");
+  slots.seconds.textContent = String(parts.seconds).padStart(2, "0");
+}
+
+function updateCountdown() {
+  setCountdown(getCountdownParts(eventStart), {
+    days: elements.eventDaysLeft,
+    hours: elements.eventHoursLeft,
+    minutes: elements.eventMinutesLeft,
+    seconds: elements.eventSecondsLeft,
+  });
+  setCountdown(getCountdownParts(rsvpDeadline), {
+    days: elements.rsvpDaysLeft,
+    hours: elements.rsvpHoursLeft,
+    minutes: elements.rsvpMinutesLeft,
+    seconds: elements.rsvpSecondsLeft,
+  });
 }
 
 function setStatus(element, message, isError = false) {
