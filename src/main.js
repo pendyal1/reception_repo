@@ -101,6 +101,16 @@ function getCountdownParts(targetDate) {
 }
 
 function setCountdown(parts, slots) {
+  // The HTML may not contain every countdown.
+  if (
+    !slots.days ||
+    !slots.hours ||
+    !slots.minutes ||
+    !slots.seconds
+  ) {
+    return;
+  }
+
   slots.days.textContent = String(parts.days);
   slots.hours.textContent = String(parts.hours).padStart(2, "0");
   slots.minutes.textContent = String(parts.minutes).padStart(2, "0");
