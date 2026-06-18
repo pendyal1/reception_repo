@@ -9,6 +9,7 @@ import {
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -18,6 +19,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import {
   getDownloadURL,
@@ -256,11 +258,13 @@ function renderPlaylist() {
     const note = document.createElement("small");
     const links = document.createElement("div");
     const apple = document.createElement("a");
+    const controls = document.createElement("div");
 
     item.className = "playlist-song";
     art.className = "playlist-art";
     details.className = "playlist-song-details";
     links.className = "playlist-song-links";
+    controls.className = "playlist-admin-controls";
 
     if (song.thumbnailUrl) {
       const image = document.createElement("img");
@@ -292,6 +296,26 @@ function renderPlaylist() {
       links.append(apple);
     }
     details.append(title, meta, note, links);
+
+    if (appState.isAdmin) {
+      const editButton = document.createElement("button");
+      const removeButton = document.createElement("button");
+      editButton.className = "text-button";
+      removeButton.className = "text-button danger";
+      editButton.type = "button";
+      removeButton.type = "button";
+      editButton.textContent = "Edit";
+      removeButton.textContent = "Remove";
+      editButton.addEventListener("click", () => {
+        editPlaylistSong(song).catch((error) => setStatus(elements.playlistStatus, error.message, true));
+      });
+      removeButton.addEventListener("click", () => {
+        removePlaylistSong(song).catch((error) => setStatus(elements.playlistStatus, error.message, true));
+      });
+      controls.append(editButton, removeButton);
+      details.append(controls);
+    }
+
     item.append(art, details);
     elements.sharedPlaylist.append(item);
   });
@@ -307,6 +331,44 @@ async function loadPlaylist() {
     ...docSnapshot.data(),
   }));
   renderPlaylist();
+}
+
+function requireAdmin(statusElement) {
+  if (!appState.isAdmin) {
+    setStatus(statusElement, "Playlist edits are only available to Pallavi and Aditya.", true);
+    return false;
+  }
+  return true;
+}
+
+async function editPlaylistSong(song) {
+  if (!requireAdmin(elements.playlistStatus)) return;
+
+  const title = window.prompt("Song title", song.title || "");
+  if (title === null) return;
+  const artistName = window.prompt("Artist", song.artistName || "");
+  if (artistName === null) return;
+  const note = window.prompt("Note", song.note || "");
+  if (note === null) return;
+
+  await updateDoc(doc(appState.db, "playlistSongs", song.id), {
+    title: title.trim() || "Apple Music song",
+    artistName: artistName.trim(),
+    note: note.trim(),
+  });
+  setStatus(elements.playlistStatus, "Playlist song updated.");
+  await loadPlaylist();
+}
+
+async function removePlaylistSong(song) {
+  if (!requireAdmin(elements.playlistStatus)) return;
+
+  const confirmed = window.confirm(`Remove "${song.title || "this song"}" from the playlist?`);
+  if (!confirmed) return;
+
+  await deleteDoc(doc(appState.db, "playlistSongs", song.id));
+  setStatus(elements.playlistStatus, "Playlist song removed.");
+  await loadPlaylist();
 }
 
 async function addAppleSong(result) {
@@ -446,6 +508,7 @@ async function checkAdmin(user) {
     appState.isAdmin = snapshot.exists();
   }
   setAdminUi(appState.isAdmin);
+  renderPlaylist();
 
   if (appState.isAdmin) {
     await Promise.all([loadRsvps(), loadUploads()]);

@@ -156,9 +156,9 @@ textarea {
   max-width: 0;
   color: var(--ink);
   font-family: "Mea Culpa", cursive;
-  font-size: clamp(2.2rem, 3.4vw, 3.1rem);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
   font-weight: 400;
-  line-height: 0.72;
+  line-height: 1;
   white-space: nowrap;
   opacity: 0;
   overflow: hidden;
@@ -167,7 +167,7 @@ textarea {
 }
 
 .show-nav-title .nav-couple-name {
-  max-width: 16rem;
+  max-width: 11.5rem;
   opacity: 1;
   transform: translateX(0);
 }
@@ -871,6 +871,30 @@ fieldset {
   font-weight: 900;
 }
 
+.playlist-admin-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.15rem;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
+}
+
+.text-button.danger {
+  color: #ffcabd;
+}
+
 .drop-zone {
   display: grid;
   min-height: 11rem;
@@ -1057,8 +1081,8 @@ footer {
   }
 
   .show-nav-title .nav-couple-name {
-    max-width: 11rem;
-    font-size: 2.05rem;
+    max-width: 8.25rem;
+    font-size: 1.2rem;
   }
 
   .hero {
