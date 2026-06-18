@@ -150,6 +150,23 @@ function getDateStamp() {
   return new Date().toISOString().slice(0, 10);
 }
 
+async function runPool(items, limit, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runNext() {
+    const currentIndex = nextIndex;
+    nextIndex += 1;
+    if (currentIndex >= items.length) return;
+    results[currentIndex] = await worker(items[currentIndex], currentIndex);
+    await runNext();
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, runNext);
+  await Promise.all(workers);
+  return results;
+}
+
 function hasAdminEmail(user) {
   return coupleAdminEmails.has((user?.email || "").toLowerCase());
 }
@@ -908,6 +925,19 @@ async function deleteUpload(uploadId, data) {
   await loadUploads();
 }
 
+async function getUploadBlob(data) {
+  const storageRef = ref(appState.storage, data.storagePath);
+
+  try {
+    return await getBlob(storageRef);
+  } catch (error) {
+    const url = await getDownloadURL(storageRef);
+    const response = await fetch(url);
+    if (!response.ok) throw error;
+    return response.blob();
+  }
+}
+
 async function downloadUploadsAsZip() {
   if (!requireAdmin(elements.adminUploadStatus)) return;
 
@@ -923,21 +953,34 @@ async function downloadUploadsAsZip() {
 
     const JSZip = await ensureZipLibrary();
     const zip = new JSZip();
-    let count = 0;
+    let completed = 0;
 
-    for (const [index, docSnapshot] of snapshot.docs.entries()) {
+    const files = await runPool(snapshot.docs, 4, async (docSnapshot, index) => {
       const data = docSnapshot.data();
-      setStatus(elements.adminUploadStatus, `Adding photo ${index + 1} of ${snapshot.size}...`);
-      const blob = await getBlob(ref(appState.storage, data.storagePath));
+      const blob = await getUploadBlob(data);
       const owner = sanitizeFileName(data.ownerName || data.ownerEmail || "guest", "guest");
       const originalName = sanitizeFileName(data.originalName || `photo-${index + 1}`, `photo-${index + 1}`);
-      zip.file(`${String(index + 1).padStart(2, "0")}-${owner}-${originalName}`, blob);
-      count += 1;
-    }
+      completed += 1;
+      setStatus(elements.adminUploadStatus, `Downloaded ${completed} of ${snapshot.size} photos...`);
+      return {
+        name: `${String(index + 1).padStart(2, "0")}-${owner}-${originalName}`,
+        blob,
+      };
+    });
 
-    const zipBlob = await zip.generateAsync({ type: "blob" });
+    files.forEach((file) => {
+      zip.file(file.name, file.blob, { compression: "STORE" });
+    });
+
+    setStatus(elements.adminUploadStatus, "Building ZIP file...");
+    const zipBlob = await zip.generateAsync(
+      { type: "blob", compression: "STORE", streamFiles: true },
+      (metadata) => {
+        setStatus(elements.adminUploadStatus, `Building ZIP file... ${Math.round(metadata.percent)}%`);
+      }
+    );
     downloadBlob(`pallavi-aditya-photos-${getDateStamp()}.zip`, zipBlob);
-    setStatus(elements.adminUploadStatus, `${count} photo${count === 1 ? "" : "s"} downloaded as a ZIP.`);
+    setStatus(elements.adminUploadStatus, `${files.length} photo${files.length === 1 ? "" : "s"} downloaded as a ZIP.`);
   } finally {
     elements.downloadUploads.disabled = false;
   }
