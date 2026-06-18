@@ -622,7 +622,7 @@ h1 {
   max-width: 56rem;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.8rem;
-  margin: 1.2rem auto 0;
+  margin: 1.2rem auto;
 }
 
 .countdown div {
